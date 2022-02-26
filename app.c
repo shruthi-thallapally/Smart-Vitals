@@ -184,7 +184,7 @@ static void delayApprox(int delay)
  *****************************************************************************/
 SL_WEAK void app_process_action(void)
 {
-  // Put your application code here.
+  // Put your application code here for A1 to A4.
   // This is called repeatedly from the main while(1) loop
   // Notice: This function is not passed or has access to Bluetooth stack events.
   //         We will create/use a scheme that is far more energy efficient in
@@ -220,9 +220,10 @@ void sl_bt_on_event(sl_bt_msg_t *evt)
   // Just a trick to hide a compiler warning about unused input parameter evt.
   (void) evt;
 
+  // For A5 onward:
   // Some events require responses from our application code,
   // and don’t necessarily advance our state machines.
-  // For assignment 5 uncomment the next 2 function calls
+  // For A5 uncomment the next 2 function calls
   // handle_ble_event(evt); // put this code in ble.c/.h
 
   // sequence through states driven by events
