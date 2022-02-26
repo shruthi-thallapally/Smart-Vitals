@@ -21,6 +21,8 @@
 #include "em_gpio.h"
 #include <string.h>
 
+#include "gpio.h"
+
 
 // Student Edit: Define these, 0's are placeholder values.
 // See the radio board user guide at https://www.silabs.com/documents/login/user-guides/ug279-brd4104a-user-guide.pdf
@@ -31,13 +33,6 @@
 #define LED0_pin   0
 #define LED1_port  0
 #define LED1_pin   0
-
-
-
-
-
-#include "gpio.h"
-
 
 
 

@@ -26,6 +26,13 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  *
+ * Date:        02-25-2022
+ * Author:      Dave Sluiter
+ * Description: This code was created by the Silicon Labs application wizard
+ *              and started as "Bluetooth - SoC Empty".
+ *              It is to be used only for ECEN 5823 "IoT Embedded Firmware".
+ *              The MSLA referenced above is in effect.
+ *
  ******************************************************************************/
 #include "em_common.h"
 #include "app_assert.h"
@@ -34,15 +41,18 @@
 #include "app.h"
 
 
+// *************************************************
+// Students: It is OK to modify this file.
+//           Make edits appropriate for each
+//           assignment.
+// *************************************************
 
-
-
-
-// DOS: FOR TESTING
 #include "sl_status.h"             // for sl_status_print()
+
 #include "src/ble_device_type.h"
 #include "src/gpio.h"
 #include "src/lcd.h"
+
 
 // Students: Here is an example of how to correctly include logging functions in
 //           each .c file.
@@ -58,124 +68,166 @@
 
 
 
+// *************************************************
+// Power Manager
+// *************************************************
+
+// See: https://docs.silabs.com/gecko-platform/latest/service/power_manager/overview
+#if defined(SL_CATALOG_POWER_MANAGER_PRESENT)
+
+// -----------------------------------------------------------------------------
+// defines for power manager callbacks
+// -----------------------------------------------------------------------------
+// Return values for app_is_ok_to_sleep():
+//   Return false to keep sl_power_manager_sleep() from sleeping the MCU.
+//   Return true to allow system to sleep when you expect/want an IRQ to wake
+//   up the MCU from the call to sl_power_manager_sleep() in the main while (1)
+//   loop.
+//
+// Students: We'll need to modify this for A2 onward so that compile time we
+//           control what the lowest EM (energy mode) the MCU sleeps to. So
+//           think "#if (expression)".
+#define APP_IS_OK_TO_SLEEP      (false)
+//#define APP_IS_OK_TO_SLEEP      (true)
 
 
-// The advertising set handle allocated from Bluetooth stack.
-static uint8_t advertising_set_handle = 0xff;
+// Return values for app_sleep_on_isr_exit():
+//   SL_POWER_MANAGER_IGNORE; // The module did not trigger an ISR and it doesn't want to contribute to the decision
+//   SL_POWER_MANAGER_SLEEP;  // The module was the one that caused the system wakeup and the system SHOULD go back to sleep
+//   SL_POWER_MANAGER_WAKEUP; // The module was the one that caused the system wakeup and the system MUST NOT go back to sleep
+//
+// Notes:
+//       SL_POWER_MANAGER_IGNORE, we see calls to app_process_action() on each IRQ. This is the
+//       expected "normal" behavior.
+//
+//       SL_POWER_MANAGER_SLEEP, the function app_process_action()
+//       in the main while(1) loop will not be called! It would seem that sl_power_manager_sleep()
+//       does not return in this case.
+//
+//       SL_POWER_MANAGER_WAKEUP, doesn't seem to allow ISRs to run. Main while loop is
+//       running continuously, flooding the VCOM port with printf text with LETIMER0 IRQs
+//       disabled somehow, LED0 is not flashing.
+
+#define APP_SLEEP_ON_ISR_EXIT   (SL_POWER_MANAGER_IGNORE)
+//#define APP_SLEEP_ON_ISR_EXIT   (SL_POWER_MANAGER_SLEEP)
+//#define APP_SLEEP_ON_ISR_EXIT   (SL_POWER_MANAGER_WAKEUP)
+
+#endif // defined(SL_CATALOG_POWER_MANAGER_PRESENT)
+
+
+
+
+// *************************************************
+// Power Manager Callbacks
+// The values returned by these 2 functions AND
+// adding and removing power manage requirements is
+// how we control when EM mode the MCU goes to when
+// sl_power_manager_sleep() is called in the main
+// while (1) loop.
+// *************************************************
+
+#if defined(SL_CATALOG_POWER_MANAGER_PRESENT)
+
+bool app_is_ok_to_sleep(void)
+{
+  return APP_IS_OK_TO_SLEEP;
+} // app_is_ok_to_sleep()
+
+sl_power_manager_on_isr_exit_t app_sleep_on_isr_exit(void)
+{
+  return APP_SLEEP_ON_ISR_EXIT;
+} // app_sleep_on_isr_exit()
+
+#endif // defined(SL_CATALOG_POWER_MANAGER_PRESENT)
+
+
+
 
 /**************************************************************************//**
  * Application Init.
  *****************************************************************************/
 SL_WEAK void app_init(void)
 {
-  /////////////////////////////////////////////////////////////////////////////
-  // Put your additional application init code here!                         //
-  // This is called once during start-up.                                    //
-  /////////////////////////////////////////////////////////////////////////////
+  // Put your application 1-time initialization code here.
+  // This is called once during start-up.
+  // Don't call any Bluetooth API functions until after the boot event.
 
-  // DOS: FOR TESTING
-  printf("printf\n");
-  LOG_INFO("log_info\n");
-  LOG_WARN("log_warn\n");
-  LOG_ERROR("log_error\n");
-  printSLErrorString(0x0002);
+  // Student Edit: Add a call to gpioInit() here
 
-}
+} // app_init()
+
+
+
+
+/*****************************************************************************
+ * delayApprox(), private to this file.
+ * A value of 3500000 is ~ 1 second. After assignment 1 you can delete or
+ * comment out this function. Wait loops are a bad idea in general.
+ * We'll discuss how to do this a better way in the next assignment.
+ *****************************************************************************/
+static void delayApprox(int delay)
+{
+  volatile int i;
+
+  for (i = 0; i < delay; ) {
+      i=i+1;
+  }
+
+} // delayApprox()
+
+
+
+
 
 /**************************************************************************//**
  * Application Process Action.
  *****************************************************************************/
 SL_WEAK void app_process_action(void)
 {
-  /////////////////////////////////////////////////////////////////////////////
-  // Put your additional application code here!                              //
-  // This is called infinitely.                                              //
-  // Do not call blocking functions from here!                               //
-  /////////////////////////////////////////////////////////////////////////////
-}
+  // Put your application code here.
+  // This is called repeatedly from the main while(1) loop
+  // Notice: This function is not passed or has access to Bluetooth stack events.
+  //         We will create/use a scheme that is far more energy efficient in
+  //         later assignments.
+
+  delayApprox(3500000);
+
+  gpioLed0SetOn();
+
+  delayApprox(3500000);
+
+  gpioLed0SetOff();
+
+} // app_process_action()
+
+
+
+
 
 /**************************************************************************//**
  * Bluetooth stack event handler.
  * This overrides the dummy weak implementation.
  *
  * @param[in] evt Event coming from the Bluetooth stack.
+ *
+ * The code here will process events from the Bluetooth stack. This is the only
+ * opportunity we will get to act on an event.
+ *
  *****************************************************************************/
 void sl_bt_on_event(sl_bt_msg_t *evt)
 {
-  sl_status_t sc;
-  bd_addr address;
-  uint8_t address_type;
-  uint8_t system_id[8];
 
-  switch (SL_BT_MSG_ID(evt->header)) {
-    // -------------------------------
-    // This event indicates the device has started and the radio is ready.
-    // Do not call any stack command before receiving this boot event!
-    case sl_bt_evt_system_boot_id:
+  // Just a trick to hide a compiler warning about unused input parameter evt.
+  (void) evt;
 
-      // Extract unique ID from BT Address.
-      sc = sl_bt_system_get_identity_address(&address, &address_type);
-      app_assert_status(sc);
+  // Some events require responses from our application code,
+  // and don’t necessarily advance our state machines.
+  // For assignment 5 uncomment the next 2 function calls
+  // handle_ble_event(evt); // put this code in ble.c/.h
 
-      // Pad and reverse unique ID to get System ID.
-      system_id[0] = address.addr[5];
-      system_id[1] = address.addr[4];
-      system_id[2] = address.addr[3];
-      system_id[3] = 0xFF;
-      system_id[4] = 0xFE;
-      system_id[5] = address.addr[2];
-      system_id[6] = address.addr[1];
-      system_id[7] = address.addr[0];
+  // sequence through states driven by events
+  // state_machine(evt);    // put this code in scheduler.c/.h
 
-      sc = sl_bt_gatt_server_write_attribute_value(gattdb_system_id,
-                                                   0,
-                                                   sizeof(system_id),
-                                                   system_id);
-      app_assert_status(sc);
 
-      // Create an advertising set.
-      sc = sl_bt_advertiser_create_set(&advertising_set_handle);
-      app_assert_status(sc);
+} // sl_bt_on_event()
 
-      // Set advertising interval to 100ms.
-      sc = sl_bt_advertiser_set_timing(
-        advertising_set_handle,
-        160, // min. adv. interval (milliseconds * 1.6)
-        160, // max. adv. interval (milliseconds * 1.6)
-        0,   // adv. duration
-        0);  // max. num. adv. events
-      app_assert_status(sc);
-      // Start general advertising and enable connections.
-      sc = sl_bt_advertiser_start(
-        advertising_set_handle,
-        sl_bt_advertiser_general_discoverable,
-        sl_bt_advertiser_connectable_scannable);
-      app_assert_status(sc);
-      break;
-
-    // -------------------------------
-    // This event indicates that a new connection was opened.
-    case sl_bt_evt_connection_opened_id:
-      break;
-
-    // -------------------------------
-    // This event indicates that a connection was closed.
-    case sl_bt_evt_connection_closed_id:
-      // Restart advertising after client has disconnected.
-      sc = sl_bt_advertiser_start(
-        advertising_set_handle,
-        sl_bt_advertiser_general_discoverable,
-        sl_bt_advertiser_connectable_scannable);
-      app_assert_status(sc);
-      break;
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Add additional event handlers here as your application requires!      //
-    ///////////////////////////////////////////////////////////////////////////
-
-    // -------------------------------
-    // Default event handler.
-    default:
-      break;
-  }
-}

@@ -7,10 +7,20 @@
  *      Editor: Mar 17, 2021, Dave Sluiter
  *      Change: Commented out logInit() and logFlush() as not needed in SSv5.
  *
- *              August 6, 2021. Got messages that sl_app_log() is deprecated and we
- *              should switch to app_log().
+ *      August 6, 2021. Got messages that sl_app_log() is deprecated and we
+ *      should switch to app_log().
+ *
+ * Editor: Feb 26, 2022, Dave Sluiter
+ * Change: Added comment about use of .h files.
  *
  */
+
+// Students: Remember, a header file (a .h file) generally defines an interface
+//           for functions defined within an implementation file (a .c file).
+//           The .h file defines what a caller (a user) of a .c file requires.
+//           At a minimum, the .h file should define the publicly callable
+//           functions, i.e. define the function prototypes. #define and type
+//           definitions can be added if the caller requires theses.
 
 #ifndef SRC_LOG_H_
 #define SRC_LOG_H_

@@ -6,7 +6,18 @@
  *
  *      Editor: Mar 14, 2021, Dave Sluiter
  *      Change: Added some vertical white space and bd_addr array indices
+ *
+ * Editor: Feb 26, 2022, Dave Sluiter
+ * Change: Added comment about use of .h files.
+ *
  */
+
+// Students: Remember, a header file (a .h file) generally defines an interface
+//           for functions defined within an implementation file (a .c file).
+//           The .h file defines what a caller (a user) of a .c file requires.
+//           At a minimum, the .h file should define the publicly callable
+//           functions, i.e. define the function prototypes. #define and type
+//           definitions can be added if the caller requires theses.
 
 #ifndef SRC_BLE_DEVICE_TYPE_H_
 #define SRC_BLE_DEVICE_TYPE_H_
