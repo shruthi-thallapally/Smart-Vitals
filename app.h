@@ -32,6 +32,10 @@
  *
  *
  *
+ * Student edit: Add your name and email address here:
+ * @student    Awesome Student, Awesome.Student@Colorado.edu
+ *
+ *
  ******************************************************************************/
 
 // Students: Remember, a header file (a .h file) generally defines an interface

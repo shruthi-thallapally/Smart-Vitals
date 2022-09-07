@@ -33,6 +33,13 @@
  *              It is to be used only for ECEN 5823 "IoT Embedded Firmware".
  *              The MSLA referenced above is in effect.
  *
+ *
+ *
+ * Student edit: Add your name and email address here:
+ * @student    Awesome Student, Awesome.Student@Colorado.edu
+ *
+ *
+ *
  ******************************************************************************/
 #include "em_common.h"
 #include "app_assert.h"

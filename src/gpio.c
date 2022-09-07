@@ -8,6 +8,11 @@
    March 17
    Dave Sluiter: Use this file to define functions that set up or control GPIOs.
 
+ *
+ * Student edit: Add your name and email address here:
+ * @student    Awesome Student, Awesome.Student@Colorado.edu
+ *
+ 
  */
 
 
