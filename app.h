@@ -38,7 +38,7 @@
  *
  ******************************************************************************/
 
-// Students: Remember, a header file (a .h file) generally defines an interface
+// Students: Remember, a header file (a .h file) defines an interface
 //           for functions defined within an implementation file (a .c file).
 //           The .h file defines what a caller (a user) of a .c file requires.
 //           At a minimum, the .h file should define the publicly callable

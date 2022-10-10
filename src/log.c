@@ -14,6 +14,13 @@
  */
 
 
+
+/*
+ * Student edit: Add your name and email address here:
+ * @student    Awesome Student, Awesome.Student@Colorado.edu
+*/
+
+
 #include <stdbool.h>
 
 // Include logging for this file
@@ -23,32 +30,21 @@
 
 
 /**
- * @return a timestamp value for the logger, typically based on a free running timer.
- * This will be printed at the beginning of each log message.
+ * @return a timestamp value for the logging functions, typically based on a
+ * free running timer.
+ * This value will be printed at the beginning of each log message.
  */
 uint32_t loggerGetTimestamp()
 {
-    #ifdef MY_USE_SYSTICKS
-    
-       // Students: Look in the CMSIS library for systick routines. For debugging
-       //           purposes this can provide greater resolution than a timestamp based on
-       //           LETIMER0. Do not turn in any code that executes systick routines
-       //           as this may effect your energy measurements and your grade.
-       
-       // Develop this function if you so desire for debugging purposes only
-	   return getSysTicks();
-	   
-    #else
-    
-       // Students: You will eventually develop this function letimerMilliseconds()
-       //           and not return 0. This will be the function to call for your graded
-       //           assignments. Put the letimerMilliseconds() function in your irq.c/.h files.
-       
-       //return letimerMilliseconds();
+
+     // Students: You will eventually develop this function called letimerMilliseconds()
+     //           and not return 0. This will be the function to call for your graded
+     //           assignments that require logging (a fancy printf).
+     //           Put the letimerMilliseconds() function in your irq.c/.h files.
+
+     //return letimerMilliseconds();
 	   return (0);
 	   
-    #endif
-
 } // loggerGetTimestamp
 
 
