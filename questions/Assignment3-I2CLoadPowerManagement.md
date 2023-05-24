@@ -3,7 +3,7 @@ See [Mastering Markdown](https://guides.github.com/features/mastering-markdown/)
 
 *Be sure to take measurements with logging disabled to ensure your logging logic is not impacting current/time measurements.*
 
-*Please include screenshots of the profiler window detailing each current measurement captured.  See the file Instructions to add screenshots in assignment.docx in the ECEN 5823 Student Public Folder.* 
+*Please include screenshots of the profiler window detailing each current measurement captured.  See the file: Instructions to add screenshots in assignment.docx in the ECEN 5823 Student Public Folder.* 
 
 1. What is the average current per period?
    Answer:

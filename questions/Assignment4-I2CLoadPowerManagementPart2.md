@@ -26,11 +26,10 @@ See [Mastering Markdown](https://guides.github.com/features/mastering-markdown/)
    ![duration_lpm_on](screenshots/assignment4/avg_current_lpm_on.jpg)  
 
 5. Compute what the total operating time of your design for assignment 4 would be in hours, assuming a 1000mAh battery power supply?
-   Answer:
+   Answer (in hours):
    
 6. How has the power consumption performance of your design changed since the previous assignment?
    Answer:
    
-7. Describe how you tested your code for EM1 during I2C transfers.
-   Answer:  
+
 

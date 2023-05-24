@@ -9,7 +9,7 @@ See [Mastering Markdown](https://guides.github.com/features/mastering-markdown/)
    <br>Screenshot:  
    ![advertising_period](screenshots/assignment5/advertising_period.png)  
 
-2. What is the average current between advertisements?
+2. What is the average current between advertisements (Don't measure an interval with a LETIMER UF event)?
    Answer:
    <br>Screenshot:  
    ![avg_current_between_advertisements](screenshots/assignment5/avg_current_between_advertisements.png)  
@@ -23,7 +23,7 @@ See [Mastering Markdown](https://guides.github.com/features/mastering-markdown/)
    <br>Screenshot: 
    ![connection_interval](screenshots/assignment5/connection_interval.png)  
 
-5. What is the average current between connection intervals?
+5. What is the average current between connection intervals (Don't measure an interval with a LETIMER UF event)?
    Answer:
    <br>Screenshot:  
    ![avg_current_between_connection_intervals](screenshots/assignment5/avg_current_between_connection_intervals.png)  
@@ -32,13 +32,3 @@ See [Mastering Markdown](https://guides.github.com/features/mastering-markdown/)
    <br>Screenshot:  
    ![slave_latency](screenshots/assignment5/slave_latency.png)  
 
-7. What is the peak current of a data transmission when the phone is connected and placed next to the Blue Gecko? 
-   Answer:
-   <br>Screenshot:  
-   ![peak_current_phone_next_to](screenshots/assignment5/peak_current_phone_next_to.png)  
-   
-8. What is the peak current of a data transmission when the phone is connected and placed approximately 20 feet away from the Blue Gecko? 
-   Answer:
-   <br>Screenshot:  
-   ![peak_current_phone_20ft_away](screenshots/assignment5/peak_current_phone_20ft_away.png)  
-   
