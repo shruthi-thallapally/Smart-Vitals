@@ -9,7 +9,7 @@ See [Mastering Markdown](https://guides.github.com/features/mastering-markdown/)
    <br>Screenshot:  
    ![advertising_period](screenshots/assignment5/advertising_period.png)  
 
-2. What is the average current between advertisements (Don't measure an interval with a LETIMER UF event)?
+2. What is the average current between advertisements - i.e. when the MCU is sleeping in EM2. (Don't measure an interval with a LETIMER UF event)?
    Answer:
    <br>Screenshot:  
    ![avg_current_between_advertisements](screenshots/assignment5/avg_current_between_advertisements.png)  
@@ -19,11 +19,11 @@ See [Mastering Markdown](https://guides.github.com/features/mastering-markdown/)
    <br>Screenshot:  
    ![peak_current_of_advertisement](screenshots/assignment5/peak_current_of_advertisement.png)  
 
-4. Provide screen shot showing the connection interval settings. Do they match the values you set in your slave(server) code or the master's(client) values?.
+4. Provide screen shot showing the connection interval settings. Do they match the values you requested in your slave(server) code, or the master's(client) values?.
    <br>Screenshot: 
    ![connection_interval](screenshots/assignment5/connection_interval.png)  
 
-5. What is the average current between connection intervals (Don't measure an interval with a LETIMER UF event)?
+5. What is the average current between connection intervals - i.e. when the MCU is sleeping in EM2. (Don't measure an interval with a LETIMER UF event)?
    Answer:
    <br>Screenshot:  
    ![avg_current_between_connection_intervals](screenshots/assignment5/avg_current_between_connection_intervals.png)  
