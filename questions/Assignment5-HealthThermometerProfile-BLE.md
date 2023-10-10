@@ -19,7 +19,7 @@ See [Mastering Markdown](https://guides.github.com/features/mastering-markdown/)
    <br>Screenshot:  
    ![peak_current_of_advertisement](screenshots/assignment5/peak_current_of_advertisement.png)  
 
-4. Provide screen shot showing the connection interval settings. Do they match the values you requested in your slave(server) code, or the master's(client) values?.
+4. Provide screen shot showing the connection interval setting. Does the connection interval match the values you requested in your slave(server) code, or the master's(client) values?.
    <br>Screenshot: 
    ![connection_interval](screenshots/assignment5/connection_interval.png)  
 
