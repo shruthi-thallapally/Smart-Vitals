@@ -60,7 +60,7 @@
 // <usartHwFlowControlRts=> RTS
 // <usartHwFlowControlCtsAndRts=> CTS/RTS
 // <i> Default: usartHwFlowControlNone
-#define SL_IOSTREAM_USART_VCOM_FLOW_CONTROL_TYPE     usartHwFlowControlNone
+#define SL_IOSTREAM_USART_VCOM_FLOW_CONTROL_TYPE     usartHwFlowControlCtsAndRts
 
 // <o SL_IOSTREAM_USART_VCOM_RX_BUFFER_SIZE> Receive buffer size
 // <i> Default: 32
@@ -105,7 +105,6 @@
 #define SL_IOSTREAM_USART_VCOM_RTS_PORT          gpioPortA
 #define SL_IOSTREAM_USART_VCOM_RTS_PIN           3
 #define SL_IOSTREAM_USART_VCOM_RTS_LOC           30
-
 // [USART_SL_IOSTREAM_USART_VCOM]$
 // <<< sl:end pin_tool >>>
 

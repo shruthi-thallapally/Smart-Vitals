@@ -543,6 +543,13 @@ MSC_RAMFUNC_DEFINITION_END
  *   uVision you must define a section called "ram_code" and place this manually
  *   in your project's scatter file.
  *
+ *   The Flash memory is organized into 64-bit wide double-words.
+ *   Each 64-bit double-word can be written only twice using burst write
+ *   operation between erasing cycles. The user's application must store data in
+ *   RAM to sustain burst write operation.
+ *
+ *   EFR32XG21 RevC is not able to program every word twice before the next erase.
+ *
  * @param[in] address
  *   Pointer to the flash word to write to. Must be aligned to words.
  * @param[in] data

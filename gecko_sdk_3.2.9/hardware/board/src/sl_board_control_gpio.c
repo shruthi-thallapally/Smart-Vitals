@@ -32,6 +32,15 @@
 
 #include "em_gpio.h"
 
+sl_status_t sl_board_configure_vcom(void)
+{
+#if defined(SL_BOARD_ENABLE_VCOM) && SL_BOARD_ENABLE_VCOM
+  return sl_board_enable_vcom();
+#else
+  return SL_STATUS_NOT_SUPPORTED;
+#endif
+}
+
 sl_status_t sl_board_enable_vcom(void)
 {
 #if defined(SL_BOARD_ENABLE_VCOM_PORT)

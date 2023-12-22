@@ -255,7 +255,7 @@ void displayInit()
     //           gpioSensorEnSetOn() to set SENSOR_ENABLE=1, see main board schematic,
     //           SENSOR_ENABLE=1 is tied to DISP_ENABLE. We need this on all the
     //           the time now for the LCD to function properly.
-    //           Create that function to gpio.c/.h Then add that function call here.
+    //           Create that function in gpio.c/.h Then add that function call here.
     //
     //gpioSensorEnSetOn(); // we need SENSOR_ENABLE=1 which is tied to DISP_ENABLE
     //                     // for the LCD, on all the time now
