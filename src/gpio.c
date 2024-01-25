@@ -14,7 +14,7 @@
 
  *
  * Student edit: Add your name and email address here:
- * @student    Awesome Student, Awesome.Student@Colorado.edu
+ * @student    Tharuni Gelli, Tharuni.gelli@Colorado.edu
  *
  
  */
@@ -39,27 +39,25 @@
 // and GPIO documentation at https://siliconlabs.github.io/Gecko_SDK_Doc/efm32g/html/group__GPIO.html
 // to determine the correct values for these.
 // If these links have gone bad, consult the reference manual and/or the datasheet for the MCU.
-// Change to correct port and pins:
-#define LED_port   (0) 
-#define LED0_pin   (0)
-#define LED1_pin   (0)
+
+#define LED_port   (5) // UIF_LED's are associated with port f(PF), whose value is 5 as per em_gpio.h enum declarations.
+#define LED0_pin   (4) // Pin 4 of PF is connected to on-board UIF LED0
+#define LED1_pin   (5) // Pin 5 of PF is connected to on-board UIF LED1
 
 
 
 // Set GPIO drive strengths and modes of operation
 void gpioInit()
 {
-    // Student Edit:
+   // Student Edit:
 
-    // Set the port's drive strength. In this MCU implementation, all GPIO cells
-    // in a "Port" share the same drive strength setting. 
 	//GPIO_DriveStrengthSet(LED_port, gpioDriveStrengthStrongAlternateStrong); // Strong, 10mA
-	GPIO_DriveStrengthSet(LED_port, gpioDriveStrengthWeakAlternateWeak); // Weak, 1mA
-	
-	// Set the 2 GPIOs mode of operation
-	GPIO_PinModeSet(LED_port, LED0_pin, gpioModePushPull, false);
-	GPIO_PinModeSet(LED_port, LED1_pin, gpioModePushPull, false);
+  GPIO_DriveStrengthSet(LED_port, gpioDriveStrengthWeakAlternateWeak); // Weak, 1mA
 
+	// Set the 2 GPIOs mode of operation
+	GPIO_PinModeSet(LED_port, LED0_pin, gpioModePushPull, false); // Push pull mode for LED0
+
+	GPIO_PinModeSet(LED_port, LED1_pin, gpioModePushPull, false); // push pull mode for LED1
 
 } // gpioInit()
 

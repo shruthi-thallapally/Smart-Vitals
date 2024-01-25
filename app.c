@@ -36,7 +36,7 @@
  *
  *
  * Student edit: Add your name and email address here:
- * @student    Awesome Student, Awesome.Student@Colorado.edu
+ * @student    Tharuni Gelli, tharuni.gelli@Colorado.edu
  *
  *
  *
@@ -159,8 +159,8 @@ SL_WEAK void app_init(void)
   // This is called once during start-up.
   // Don't call any Bluetooth API functions until after the boot event.
 
-  // Student Edit: Add a call to gpioInit() here
-
+  // Student Edit:
+  gpioInit(); // Calling GPIO Init to initialize port and pins
 
 
 } // app_init()
@@ -199,13 +199,17 @@ SL_WEAK void app_process_action(void)
   //         We will create/use a scheme that is far more energy efficient in
   //         later assignments.
 
-  delayApprox(3500000);
+  delayApprox(3500000); // Delay of 1sec
 
-  gpioLed0SetOn();
+  gpioLed0SetOn(); // Turning ON LED0
+  gpioLed1SetOn(); // Turning ON LED1
 
-  delayApprox(3500000);
 
-  gpioLed0SetOff();
+  delayApprox(3500000); // Delay of 1sec
+
+
+  gpioLed0SetOff(); // Turning OFF LED0
+  gpioLed1SetOff(); // Turning OFF LED0
 
 } // app_process_action()
 
