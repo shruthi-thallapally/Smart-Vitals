@@ -59,6 +59,10 @@
 #include "src/ble_device_type.h"
 #include "src/gpio.h"
 #include "src/lcd.h"
+#include "src/oscillators.h"
+#include "src/timers.h"
+#include "src/irq.h"
+#include "em_letimer.h"
 
 
 // Students: Here is an example of how to correctly include logging functions in
@@ -94,8 +98,11 @@
 // Students: We'll need to modify this for A2 onward so that compile time we
 //           control what the lowest EM (energy mode) the MCU sleeps to. So
 //           think "#if (expression)".
-#define APP_IS_OK_TO_SLEEP      (false)
-//#define APP_IS_OK_TO_SLEEP      (true)
+#if LOWEST_ENERGY_MODE == 0 // Only for EM0 mode I need this to be false
+  #define APP_IS_OK_TO_SLEEP      (false)
+#else // Except for EM0 (EM1,EM2 & EM3) I need this to be true
+  #define APP_IS_OK_TO_SLEEP      (true)
+#endif
 
 
 // Return values for app_sleep_on_isr_exit():
@@ -160,8 +167,28 @@ SL_WEAK void app_init(void)
   // Don't call any Bluetooth API functions until after the boot event.
 
   // Student Edit:
+
+  if(LOWEST_ENERGY_MODE == 1)
+  {
+      sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM1); // adding a power requirement for EM1
+  }
+  else if(LOWEST_ENERGY_MODE == 2)
+  {
+      sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM2); // adding a power requirement for EM2
+  }
+
   gpioInit(); // Calling GPIO Init to initialize port and pins
 
+  gpioLed0SetOff(); // Turning LED's OFF by calling function
+
+  init_oscillator(); // Calling oscillator initialization function
+
+  init_LETIMER0(); // Calling LETIMER0 Init to initialize TIMER0
+
+  LETIMER_IntEnable(LETIMER0, LETIMER_IEN_UF | LETIMER_IEN_COMP1); // Loading reload value of COMP1
+
+  NVIC_ClearPendingIRQ(LETIMER0_IRQn); // Clearing pending IRQ
+  NVIC_EnableIRQ(LETIMER0_IRQn);    // Enabling Timer interrupt
 
 } // app_init()
 
@@ -174,6 +201,7 @@ SL_WEAK void app_init(void)
  * comment out this function. Wait loops are a bad idea in general.
  * We'll discuss how to do this a better way in the next assignment.
  *****************************************************************************/
+/*
 static void delayApprox(int delay)
 {
   volatile int i;
@@ -183,6 +211,7 @@ static void delayApprox(int delay)
   }
 
 } // delayApprox()
+*/
 
 
 
@@ -199,17 +228,6 @@ SL_WEAK void app_process_action(void)
   //         We will create/use a scheme that is far more energy efficient in
   //         later assignments.
 
-  delayApprox(3500000); // Delay of 1sec
-
-  gpioLed0SetOn(); // Turning ON LED0
-  gpioLed1SetOn(); // Turning ON LED1
-
-
-  delayApprox(3500000); // Delay of 1sec
-
-
-  gpioLed0SetOff(); // Turning OFF LED0
-  gpioLed1SetOff(); // Turning OFF LED0
 
 } // app_process_action()
 
