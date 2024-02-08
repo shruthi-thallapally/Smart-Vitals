@@ -13,35 +13,19 @@
 
 #include "app.h"
 #include "src/irq.h"
+#include "src/scheduler.h"
 
 // Function definition for the LETIMER0 interrupt handler
 void LETIMER0_IRQHandler(void)
 {
-  // Declare a variable to store the state of the CPU interrupt and enter a critical section
-  CORE_DECLARE_IRQ_STATE;
-  CORE_ENTER_CRITICAL();
+    // Retrieve the enabled interrupt flags from LETIMER0.
+    uint32_t value = LETIMER_IntGetEnabled(LETIMER0);
 
-  // Read the pending interrupt flags and store them in the 'value' variable
-  uint32_t value = LETIMER_IntGetEnabled(LETIMER0);
+    // Clear the enabled interrupt flags in LETIMER0.
+    LETIMER_IntClear(LETIMER0, value);
 
-  // Clear the pending interrupts for the specified flags
-  LETIMER_IntClear(LETIMER0, value);
-
-  // Exit the critical section
-  CORE_EXIT_CRITICAL();
-
-  // Check if the interrupt was triggered by a specific event (value==2)
-  if(value == 2)
-  {
-    // Call a function to turn off LED 0
-    gpioLed0SetOff();
-  }
-
-  // Check if the interrupt was triggered by another specific event (value==4)
-  else if(value == 4)
-  {
-    // Call a function to turn on LED 0
-    gpioLed0SetOn();
-  }
+    // Set an event flag to indicate that an underflow event has occurred.
+    schedulerSetEventUF();
 }
+
 

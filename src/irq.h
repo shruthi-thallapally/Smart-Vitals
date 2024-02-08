@@ -17,12 +17,11 @@
 
 
 /**
- * @brief Interrupt handler for LETIMER0
+ * @brief Interrupt service routine for LETIMER0.
  *
- * This function is the interrupt service routine (ISR) for LETIMER0.
- * It handles the pending interrupts, clears them, and takes actions based on
- * the specific interrupt flags. In this case, it checks for specific values
- * and performs corresponding operations, such as turning on or off an LED.
+ * This function is the interrupt service routine (ISR) for LETIMER0 interrupts.
+ * It handles the interrupt by clearing the interrupt flags and sets an event flag
+ * to indicate that an underflow event has occurred.
  */
 void LETIMER0_IRQHandler(void);
 

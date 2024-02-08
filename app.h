@@ -33,7 +33,7 @@
  *
  *
  * Student edit: Add your name and email address here:
- * @student    Awesome Student, Awesome.Student@Colorado.edu
+ * @student    Tharuni Gelli, tharuni.gelli@Colorado.edu
  *
  *
  ******************************************************************************/
@@ -49,10 +49,10 @@
 #define APP_H
 
 // #define's to control the energy mode selection between EM0,EM1,EM2 & EM3
-#define LOWEST_ENERGY_MODE 0
+//#define LOWEST_ENERGY_MODE 0
 //#define LOWEST_ENERGY_MODE 1
 //#define LOWEST_ENERGY_MODE 2
-//#define LOWEST_ENERGY_MODE 3
+#define LOWEST_ENERGY_MODE 3
 
 /**************************************************************************//**
  * Application Init.

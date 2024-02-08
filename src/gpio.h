@@ -33,13 +33,27 @@
 
 
 // Function prototypes
+
+// Function to initialize GPIO ports and pin as per required config
 void gpioInit();
+
+// Function to turn on LED0
 void gpioLed0SetOn();
+
+// Function to turn off LED0
 void gpioLed0SetOff();
+
+// Function to turn on LED1
 void gpioLed1SetOn();
+
+// Function to turn off LED0
 void gpioLed1SetOff();
 
+//Function to enable sensor
+void sensor_enable();
 
+//Function to disable sensor
+void sensor_disable();
 
 
 

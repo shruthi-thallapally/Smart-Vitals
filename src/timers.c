@@ -17,10 +17,14 @@
 // based on the LETIMER_PERIOD_MS and ACTUAL_CLK_FREQ, then convert it to microseconds
 #define VALUE_TO_LOAD_COMP0 (LETIMER_PERIOD_MS * ACTUAL_CLK_FREQ) / 1000
 
-// Calculate the value to load into LETIMER_COMP1 register
-// based on the difference between LETIMER_PERIOD_MS and LETIMER_ON_TIME_MS,
-// and ACTUAL_CLK_FREQ, then convert it to microseconds
-#define VALUE_TO_LOAD_COMP1 ((LETIMER_PERIOD_MS - LETIMER_ON_TIME_MS) * ACTUAL_CLK_FREQ) / 1000
+
+//LETIMER macros for range check limit
+//#define CLK_RSL 61                             // Clock resolution in EM0,1,2
+//#define MIN_WAIT_TIME ((10^6)/ACTUAL_CLK_FREQ) // Minimum wait time range check in EM0,1,2
+#define CLK_RSL 1000                             // Clock resolution in EM3
+#define MIN_WAIT_TIME 1000                       // Minimum wait time range check in EM3
+#define MAX_WAIT_TIME 3000000                    // Maximum wait time range check in EM0,1,2,3
+
 
 
 /*
@@ -51,14 +55,61 @@ void init_LETIMER0 ()
     // Set the value of COMP0 in LETIMER0
     LETIMER_CompareSet(LETIMER0, 0, VALUE_TO_LOAD_COMP0);
 
-    // Set the value of COMP1 in LETIMER0
-    LETIMER_CompareSet(LETIMER0, 1, VALUE_TO_LOAD_COMP1);
-
     // Enable LETIMER0
     LETIMER_Enable (LETIMER0, true);
+
+    //Timer peripheral underflow interrupt enable
+    LETIMER_IntEnable(LETIMER0, LETIMER_IEN_UF);
+
 } // init_LETIMER0 ()
 
 
+// Function to make wait for a specified duration in microseconds using a letimer0.
+void timerWaitUs(uint32_t us_wait)
+{
+    // Declare variables for current counter value, required counter value,
+    // and required ticks for the given microsecond duration.
+    uint16_t current_cnt, required_cnt, required_tick;
+
+    // Check if the input duration is within the acceptable range.
+    if((us_wait < (uint32_t)MIN_WAIT_TIME) | (us_wait > (uint32_t)MAX_WAIT_TIME))
+    {
+        // Log an error message if the input duration is out of range.
+        LOG_ERROR("TimerWait range\n\r");
+
+        // Adjust the input duration to the minimum or maximum allowed value if it's out of range.
+        if(us_wait < (uint16_t)MIN_WAIT_TIME)
+        {
+            us_wait = MIN_WAIT_TIME;
+        }
+        else if(us_wait > (uint16_t)MAX_WAIT_TIME)
+        {
+            us_wait = MAX_WAIT_TIME;
+        }
+    }
+
+    // Calculate the required number of ticks for the given microsecond duration.
+    required_tick = (us_wait / CLK_RSL);
+
+    // Get the current counter value from the timer.
+    current_cnt = LETIMER_CounterGet(LETIMER0);
+
+    // Calculate the required counter value for the timer.
+    required_cnt = current_cnt - required_tick;
+
+    // Check if the current counter value is greater than or equal to the required ticks.
+    if(current_cnt >= required_tick)
+    {
+        // Wait until the timer counter reaches the required count.
+        while((LETIMER_CounterGet(LETIMER0)) != (required_cnt));
+    }
+    else
+    {
+        // Wait until the timer counter reaches the adjusted required count,
+        // considering the overflow scenario.
+        while((LETIMER_CounterGet(LETIMER0)) != (uint32_t)(VALUE_TO_LOAD_COMP0 - (required_tick - current_cnt)));
+    }
+}
 
 
 

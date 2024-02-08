@@ -62,6 +62,8 @@
 #include "src/oscillators.h"
 #include "src/timers.h"
 #include "src/irq.h"
+#include "src/scheduler.h"
+#include "src/i2c.h"
 #include "em_letimer.h"
 
 
@@ -129,7 +131,11 @@
 #endif // defined(SL_CATALOG_POWER_MANAGER_PRESENT)
 
 
-
+enum
+{
+  evtNoEvent = 0,
+  evtLETIMER0UF = 1,
+};
 
 // *************************************************
 // Power Manager Callbacks
@@ -168,6 +174,14 @@ SL_WEAK void app_init(void)
 
   // Student Edit:
 
+  gpioInit(); // Calling GPIO Init to initialize port and pins
+
+  init_oscillator(); // Calling oscillator initialization function
+
+  init_LETIMER0(); // Calling LETIMER0 Init to initialize TIMER0
+
+  Init_i2c(); // Calling I2C init to initialize I2C0
+
   if(LOWEST_ENERGY_MODE == 1)
   {
       sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM1); // adding a power requirement for EM1
@@ -177,44 +191,10 @@ SL_WEAK void app_init(void)
       sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM2); // adding a power requirement for EM2
   }
 
-  gpioInit(); // Calling GPIO Init to initialize port and pins
-
-  gpioLed0SetOff(); // Turning LED's OFF by calling function
-
-  init_oscillator(); // Calling oscillator initialization function
-
-  init_LETIMER0(); // Calling LETIMER0 Init to initialize TIMER0
-
-  LETIMER_IntEnable(LETIMER0, LETIMER_IEN_UF | LETIMER_IEN_COMP1); // Loading reload value of COMP1
-
   NVIC_ClearPendingIRQ(LETIMER0_IRQn); // Clearing pending IRQ
   NVIC_EnableIRQ(LETIMER0_IRQn);    // Enabling Timer interrupt
 
 } // app_init()
-
-
-
-
-/*****************************************************************************
- * delayApprox(), private to this file.
- * A value of 3500000 is ~ 1 second. After assignment 1 you can delete or
- * comment out this function. Wait loops are a bad idea in general.
- * We'll discuss how to do this a better way in the next assignment.
- *****************************************************************************/
-/*
-static void delayApprox(int delay)
-{
-  volatile int i;
-
-  for (i = 0; i < delay; ) {
-      i=i+1;
-  }
-
-} // delayApprox()
-*/
-
-
-
 
 
 /**************************************************************************//**
@@ -227,6 +207,26 @@ SL_WEAK void app_process_action(void)
   // Notice: This function is not passed or has access to Bluetooth stack events.
   //         We will create/use a scheme that is far more energy efficient in
   //         later assignments.
+  // Declare a variable to store the retrieved event flag.
+  uint32_t event;
+
+  // Retrieve the next event flag from the system.
+  event = getNextEvent();
+
+  // Switch based on the retrieved event flag to determine the action to take.
+  switch(event)
+  {
+      // If the event is an underflow event from LETIMER0.
+      case evtLETIMER0UF:
+          // Perform temperature measurement from the Si7021 sensor when underflow flag is set.
+          Read_si7021();
+          break;
+
+      // If the event is not recognized or no event is present.
+      default:
+          // No action required.
+          break;
+  }
 
 
 } // app_process_action()

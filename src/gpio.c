@@ -40,10 +40,11 @@
 // to determine the correct values for these.
 // If these links have gone bad, consult the reference manual and/or the datasheet for the MCU.
 
-#define LED_port   (5) // UIF_LED's are associated with port f(PF), whose value is 5 as per em_gpio.h enum declarations.
-#define LED0_pin   (4) // Pin 4 of PF is connected to on-board UIF LED0
-#define LED1_pin   (5) // Pin 5 of PF is connected to on-board UIF LED1
-
+#define LED_port    (5) // UIF_LED's are associated with port f(PF), whose value is 5 as per em_gpio.h enum declarations.
+#define LED0_pin    (4) // Pin 4 of PF is connected to on-board UIF LED0
+#define LED1_pin    (5) // Pin 5 of PF is connected to on-board UIF LED1
+#define SENSOR_port (3) // UIF_LED's are associated with port f(PD), whose value is 3 as per em_gpio.h enum declarations.
+#define SENSOR_pin  (15)// Pin 15 of PD is connected to sensor
 
 
 // Set GPIO drive strengths and modes of operation
@@ -58,6 +59,9 @@ void gpioInit()
 	GPIO_PinModeSet(LED_port, LED0_pin, gpioModePushPull, false); // Push pull mode for LED0
 
 	GPIO_PinModeSet(LED_port, LED1_pin, gpioModePushPull, false); // push pull mode for LED1
+
+  GPIO_DriveStrengthSet(SENSOR_port, gpioDriveStrengthWeakAlternateWeak);
+  GPIO_PinModeSet(SENSOR_port, SENSOR_pin, gpioModePushPull, false);
 
 } // gpioInit()
 
@@ -85,6 +89,15 @@ void gpioLed1SetOff()
 	GPIO_PinOutClear(LED_port, LED1_pin);
 }
 
+void sensor_enable()
+{
+  GPIO_PinOutSet(SENSOR_port, SENSOR_pin);
+}
+
+void sensor_disable()
+{
+  GPIO_PinOutClear(SENSOR_port, SENSOR_pin);
+}
 
 
 
