@@ -25,7 +25,17 @@
  */
 void LETIMER0_IRQHandler(void);
 
+/**
+ * @brief Get the current time in milliseconds from the LETIMER peripheral.
+ * @return The current time in milliseconds.
+ */
+uint32_t letimerMilliseconds();
 
+/**
+ * @brief Interrupt handler for the I2C0 peripheral.
+ *        Handles the completion or failure of an I2C transfer.
+ */
+void I2C0_IRQHandler(void);
 
 
 #endif /* SRC_IRQ_H_ */

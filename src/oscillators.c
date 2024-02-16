@@ -22,7 +22,7 @@
 #define LFXO_FREQ 32768
 
 // Define the prescaler value for the Low-Frequency Crystal Oscillator (LFXO)
-#define LFXO_PRESCALER 4
+#define LFXO_PRESCALER 2
 
 
 
@@ -70,8 +70,8 @@ void init_oscillator()
       // Select LFXO as the clock source for Low-Frequency A Clock (LFA)
       CMU_ClockSelectSet(cmuClock_LFA, cmuSelect_LFXO);
 
-      // Set the clock division factor for LETIMER0 to 4
-      CMU_ClockDivSet(cmuClock_LETIMER0, cmuClkDiv_4);
+      // Set the clock division factor for LETIMER0 to 2
+      CMU_ClockDivSet(cmuClock_LETIMER0, cmuClkDiv_2);
 
       // Enable the clock for Low Energy Timer 0 (LETIMER0)
       CMU_ClockEnable(cmuClock_LETIMER0, true);

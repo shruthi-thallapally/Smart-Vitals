@@ -10,20 +10,19 @@
 
 #include "src/timers.h"
 
-// Define ACTUAL_CLK_FREQ as the result of calling the required_oscillator() function
-#define ACTUAL_CLK_FREQ required_oscillator()
-
-// Calculate the value to load into LETIMER_COMP0 register
-// based on the LETIMER_PERIOD_MS and ACTUAL_CLK_FREQ, then convert it to microseconds
-#define VALUE_TO_LOAD_COMP0 (LETIMER_PERIOD_MS * ACTUAL_CLK_FREQ) / 1000
-
 
 //LETIMER macros for range check limit
-//#define CLK_RSL 61                             // Clock resolution in EM0,1,2
-//#define MIN_WAIT_TIME ((10^6)/ACTUAL_CLK_FREQ) // Minimum wait time range check in EM0,1,2
-#define CLK_RSL 1000                             // Clock resolution in EM3
-#define MIN_WAIT_TIME 1000                       // Minimum wait time range check in EM3
-#define MAX_WAIT_TIME 3000000                    // Maximum wait time range check in EM0,1,2,3
+
+#if (LOWEST_ENERGY_MODE < 3)
+#define CLK_RSL 61                             // Clock resolution in EM0,1,2
+#define MIN_WAIT_TIME 61                       // Minimum wait time range check in EM0,1,2
+
+#else
+#define CLK_RSL 1000                           // Clock resolution in EM3
+#define MIN_WAIT_TIME 1000                     // Minimum wait time range check in EM3
+#endif
+
+#define MAX_WAIT_TIME 3000000                  // Maximum wait time range check in EM0,1,2,3
 
 
 
@@ -38,7 +37,7 @@ void init_LETIMER0 ()
     const LETIMER_Init_TypeDef letimerInitData =
     {
         false,                  // Enable or disable the LETIMER after initialization
-        false,                   // Start counting when initialized
+        true,                   // Start counting when initialized
         true,                   // Counter continues while the CPU is halted in debug mode
         false,                  // Debug mode will not affect outputs
         0,                      // Counter value to load into COMP0 after overflow
@@ -65,7 +64,7 @@ void init_LETIMER0 ()
 
 
 // Function to make wait for a specified duration in microseconds using a letimer0.
-void timerWaitUs(uint32_t us_wait)
+void timerWaitUs_polled(uint32_t us_wait)
 {
     // Declare variables for current counter value, required counter value,
     // and required ticks for the given microsecond duration.
@@ -110,6 +109,55 @@ void timerWaitUs(uint32_t us_wait)
         while((LETIMER_CounterGet(LETIMER0)) != (uint32_t)(VALUE_TO_LOAD_COMP0 - (required_tick - current_cnt)));
     }
 }
+
+
+void timerWaitUs_irq(uint32_t us_wait)
+{
+  uint16_t current_cnt, required_cnt, required_tick; // Declare variables for current counter, required counter, and required tick.
+
+  // Check if the wait time is within the acceptable range.
+  if((us_wait<(uint32_t)MIN_WAIT_TIME) | (us_wait>(uint32_t)MAX_WAIT_TIME))
+  {
+      LOG_ERROR("TimerWait range\n\r"); // Log an error message if the wait time is out of range.
+
+      // Adjust the wait time to the minimum if it's below the minimum threshold.
+      if(us_wait < (uint32_t)MIN_WAIT_TIME)
+      {
+          us_wait = MIN_WAIT_TIME;
+      }
+
+      // Adjust the wait time to the maximum if it's above the maximum threshold.
+      else if(us_wait > (uint32_t)MAX_WAIT_TIME)
+      {
+          us_wait = MAX_WAIT_TIME;
+      }
+  }
+
+  // Calculate the number of timer ticks required for the given wait time.
+  required_tick = (us_wait/CLK_RSL);
+
+  // Get the current count value of the LETIMER.
+  current_cnt = LETIMER_CounterGet(LETIMER0);
+
+  // Calculate the required counter value by subtracting the required ticks from the current count.
+  required_cnt = current_cnt - required_tick;
+
+  // Handle wrap-around case if the required count is greater than the maximum value.
+  if(required_cnt > VALUE_TO_LOAD_COMP0)
+  {
+      required_cnt = VALUE_TO_LOAD_COMP0 - (0xFFFF - required_cnt);
+  }
+
+  // Set the compare value for the COMP1 register to trigger an interrupt.
+  LETIMER_CompareSet(LETIMER0, 1, required_cnt);
+
+  // Enable the COMP1 interrupt in the LETIMER module.
+  LETIMER_IntEnable(LETIMER0, LETIMER_IEN_COMP1);
+
+  // Enable the COMP1 interrupt in the LETIMER0 interrupt enable register.
+  LETIMER0->IEN |= LETIMER_IEN_COMP1;
+}
+
 
 
 

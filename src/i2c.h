@@ -56,21 +56,4 @@ void Read_i2c();
 float ConvertValueToCelcius();
 
 
-/**
- * @brief Reads temperature data from the Si7021 sensor.
- *
- * This function reads temperature data from the Si7021 sensor by following a sequence of steps:
- * 1. Enable the sensor.
- * 2. Initialize the I2C communication.
- * 3. Wait for a specified duration.
- * 4. Write data to the sensor over I2C.
- * 5. Wait for a specified duration.
- * 6. Read data from the sensor over I2C.
- * 7. Disable the sensor.
- * 8. Convert the read sensor value to Celsius.
- * 9. Log the temperature data.
- */
-void Read_si7021();
-
-
 #endif /* SRC_I2C_H_ */

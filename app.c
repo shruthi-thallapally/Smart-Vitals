@@ -131,12 +131,6 @@
 #endif // defined(SL_CATALOG_POWER_MANAGER_PRESENT)
 
 
-enum
-{
-  evtNoEvent = 0,
-  evtLETIMER0UF = 1,
-};
-
 // *************************************************
 // Power Manager Callbacks
 // The values returned by these 2 functions AND
@@ -180,8 +174,6 @@ SL_WEAK void app_init(void)
 
   init_LETIMER0(); // Calling LETIMER0 Init to initialize TIMER0
 
-  Init_i2c(); // Calling I2C init to initialize I2C0
-
   if(LOWEST_ENERGY_MODE == 1)
   {
       sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM1); // adding a power requirement for EM1
@@ -213,21 +205,8 @@ SL_WEAK void app_process_action(void)
   // Retrieve the next event flag from the system.
   event = getNextEvent();
 
-  // Switch based on the retrieved event flag to determine the action to take.
-  switch(event)
-  {
-      // If the event is an underflow event from LETIMER0.
-      case evtLETIMER0UF:
-          // Perform temperature measurement from the Si7021 sensor when underflow flag is set.
-          Read_si7021();
-          break;
-
-      // If the event is not recognized or no event is present.
-      default:
-          // No action required.
-          break;
-  }
-
+  // Calling state machine for temperature reading
+  Temperature_State_Machine(event);
 
 } // app_process_action()
 
@@ -243,6 +222,7 @@ SL_WEAK void app_process_action(void)
  *
  * The code here will process events from the Bluetooth stack. This is the only
  * opportunity we will get to act on an event.
+ *
  *
  *****************************************************************************/
 void sl_bt_on_event(sl_bt_msg_t *evt)

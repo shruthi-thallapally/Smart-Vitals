@@ -13,7 +13,19 @@
 
 #include "app.h"
 #include "src/irq.h"
+#include "src/timers.h"
 #include "src/scheduler.h"
+#include "em_i2c.h"
+
+int rollover_value=0;  // Initialize a variable to hold the rollover value, starting at 0.
+
+uint32_t letimerMilliseconds()  // Define a function named letimerMilliseconds returning an unsigned 32-bit integer.
+{
+  uint32_t time_ms;  // Declare a variable to store the time in milliseconds.
+  time_ms = (rollover_value*3000)+(VALUE_TO_LOAD_COMP0-LETIMER_CounterGet(LETIMER0));  // Calculate the time in milliseconds based on the rollover value, the value to load into the comparator, and the current counter value.
+  return time_ms;  // Return the calculated time in milliseconds.
+}
+
 
 // Function definition for the LETIMER0 interrupt handler
 void LETIMER0_IRQHandler(void)
@@ -24,8 +36,60 @@ void LETIMER0_IRQHandler(void)
     // Clear the enabled interrupt flags in LETIMER0.
     LETIMER_IntClear(LETIMER0, value);
 
-    // Set an event flag to indicate that an underflow event has occurred.
-    schedulerSetEventUF();
+    if(value & LETIMER_IF_COMP1)
+    {
+        // Check if the COMP1 interrupt flag is set
+        LETIMER_IntDisable(LETIMER0, LETIMER_IEN_COMP1); // Disable COMP1 interrupt
+        schedulerSetEventCOMP1(); // Set an event for COMP1 in the scheduler
+    }
+    else if(value & LETIMER_IF_UF)
+    {
+        // Check if the UF (underflow) interrupt flag is set
+        schedulerSetEventUF(); // Set an event for underflow in the scheduler
+
+        // Enter critical section to ensure atomicity of rollover_value update
+        CORE_DECLARE_IRQ_STATE;
+        CORE_ENTER_CRITICAL();
+
+        // Increment rollover_value
+        rollover_value+=1;
+
+        // Exit critical section
+        CORE_EXIT_CRITICAL();
+    }
+
 }
+
+
+
+// This function is the interrupt handler for the I2C0 peripheral.
+// It is called when an I2C transfer is complete or encounters an error.
+
+void I2C0_IRQHandler(void)
+{
+  // Variable to store the status of the I2C transfer
+  I2C_TransferReturn_TypeDef Transfer_Status;
+
+  // Perform an I2C transfer and store the status
+  Transfer_Status = I2C_Transfer(I2C0);
+
+  // Check if the transfer was successful
+  if(Transfer_Status == i2cTransferDone)
+  {
+    // Disable the I2C0 interrupt to prevent re-entry while processing
+    NVIC_DisableIRQ(I2C0_IRQn);
+
+    // Notify the scheduler that the transfer is done
+    schedulerSetEventTransferDone();
+  }
+
+  // Check if there was an error during the transfer
+  if(Transfer_Status < 0)
+  {
+    // Log the error with the status code
+    LOG_ERROR("I2C_TStatus %d : failed\n\r", (uint32_t)Transfer_Status);
+  }
+}
+
 
 

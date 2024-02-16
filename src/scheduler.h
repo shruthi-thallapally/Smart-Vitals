@@ -15,6 +15,9 @@
 #include "src/oscillators.h"
 #include "src/gpio.h"
 
+
+void Temperature_State_Machine(uint32_t Event);
+
 /**
  * @brief Sets an event flag for underflow event from LETIMER0.
  *
@@ -23,7 +26,28 @@
  */
 void schedulerSetEventUF();
 
+/**
+ * @brief Sets an event related to COMP1 for scheduling.
+ *
+ * This function sets an event related to the COMP1 peripheral for scheduling.
+ * The event is used by the scheduler to trigger actions or state transitions
+ * in the system.
+ *
+ * @return void
+ */
+void schedulerSetEventCOMP1();
 
+/**
+ * @brief Sets an event indicating the completion of a transfer.
+ *
+ * This function sets an event indicating the completion of a data transfer.
+ * The event is typically used in systems where asynchronous data transfer
+ * operations are performed, such as I2C or SPI communication. The event
+ * is useful for triggering actions or state transitions in the system.
+ *
+ * @return void
+ */
+void schedulerSetEventTransferDone();
 
 /**
  * @brief Retrieves and clears the next event flag.
