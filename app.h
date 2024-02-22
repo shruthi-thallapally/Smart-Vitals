@@ -48,11 +48,22 @@
 #ifndef APP_H
 #define APP_H
 
+#include "em_common.h"
+#include "app_assert.h" // got messages that sl_app_assert() is deprecated and should switch to all_assert()
+
+#include "sl_bluetooth.h"
+#include "gatt_db.h"
+
+#include "sl_status.h" // for sl_status_print()
+#include "sl_bt_api.h"
+
+#include "src/ble_device_type.h"
+
 // #define's to control the energy mode selection between EM0,EM1,EM2 & EM3
 //#define LOWEST_ENERGY_MODE 0
 //#define LOWEST_ENERGY_MODE 1
-//#define LOWEST_ENERGY_MODE 2
-#define LOWEST_ENERGY_MODE 3
+#define LOWEST_ENERGY_MODE 2
+//#define LOWEST_ENERGY_MODE 3
 
 /**************************************************************************//**
  * Application Init.

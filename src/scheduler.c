@@ -9,8 +9,11 @@
 #define INCLUDE_LOG_DEBUG 1
 #include "src/log.h"
 
+#include "app.h"
 #include "src/scheduler.h"
 #include "src/i2c.h"
+#include "sl_bt_api.h"
+#include "src/ble.h"
 
 // Declare a global variable named my_event of type uint32_t to store event flags.
 uint32_t my_event;
@@ -19,16 +22,16 @@ uint32_t my_event;
 enum
 {
     // Define an event flag indicating no event.
-    evt_no_event = 0x00,
+    evt_no_event = 0,
 
     // Define an event flag indicating an underflow event from LETIMER0.
-    evt_LETIMER0_UF = 0x01,
+    evt_LETIMER0_UF,
 
     // Define an event indicating value reach for COMP1.
-    evt_COMP1=0x02,
+    evt_COMP1,
 
     // Define an event indicating transfer done for i2c.
-    evt_Transfer_Done=0x04,
+    evt_Transfer_Done,
 };
 
 
@@ -42,11 +45,18 @@ typedef enum uint32_t // Define a new enumeration type with a fixed size of 32 b
 } My_State; // Name the enumeration type as My_State
 
 
-void Temperature_State_Machine(uint32_t Event)
+void state_machine(sl_bt_msg_t *evt)
 {
   My_State Current_State; // Declare a variable to hold the current state of the state machine.
 
   static My_State Next_State = StateA_IDLE; // Declare a static variable to hold the next state, initialized to StateA_IDLE.
+
+  ble_data_struct_t *ble_Data = get_ble_DataPtr();
+
+  if((SL_BT_MSG_ID(evt->header)==sl_bt_evt_system_external_signal_id)
+       && (ble_Data->Connected==true)
+       && (ble_Data->Indication==true))
+  {
 
   Current_State = Next_State; // Set the current state to the next state.
 
@@ -58,7 +68,7 @@ void Temperature_State_Machine(uint32_t Event)
 
       Next_State = StateA_IDLE; // Set the next state to StateA_IDLE.
 
-      if(Event & evt_LETIMER0_UF) // Check if the event includes LETIMER0 underflow.
+      if(evt->data.evt_system_external_signal.extsignals == evt_LETIMER0_UF) // Check if the event includes LETIMER0 underflow.
       {
           sensor_enable(); // Enable the sensor.
 
@@ -73,11 +83,12 @@ void Temperature_State_Machine(uint32_t Event)
 
       Next_State = StateB_TIMER_WAIT; // Set the next state to StateB_TIMER_WAIT.
 
-      if(Event & evt_COMP1) // Check if the event includes a comparison event from COMP1.
+      if(evt->data.evt_system_external_signal.extsignals == evt_COMP1) // Check if the event includes a comparison event from COMP1.
       {
-          Write_i2c(); // Perform an I2C write operation.
 
           sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM1); // Add energy mode requirement EM1.
+
+          Write_i2c(); // Perform an I2C write operation.
 
           Next_State = StateC_WRITE_CMD; // Set the next state to StateC_WRITE_CMD.
       }
@@ -88,7 +99,7 @@ void Temperature_State_Machine(uint32_t Event)
 
       Next_State = StateC_WRITE_CMD; // Set the next state to StateC_WRITE_CMD.
 
-      if(Event & evt_Transfer_Done) // Check if the event includes a transfer done event.
+      if(evt->data.evt_system_external_signal.extsignals == evt_Transfer_Done) // Check if the event includes a transfer done event.
       {
           sl_power_manager_remove_em_requirement(SL_POWER_MANAGER_EM1); // Remove energy mode requirement EM1.
 
@@ -103,7 +114,7 @@ void Temperature_State_Machine(uint32_t Event)
 
       Next_State = StateD_WRITE_WAIT; // Set the next state to StateD_WRITE_WAIT.
 
-      if(Event & evt_COMP1) // Check if the event includes a comparison event from COMP1.
+      if(evt->data.evt_system_external_signal.extsignals == evt_COMP1) // Check if the event includes a comparison event from COMP1.
       {
           Read_i2c(); // Perform an I2C read operation.
 
@@ -118,7 +129,7 @@ void Temperature_State_Machine(uint32_t Event)
 
       Next_State = StateE_READ; // Set the next state to StateE_READ.
 
-      if(Event & evt_Transfer_Done) // Check if the event includes a transfer done event.
+      if(evt->data.evt_system_external_signal.extsignals == evt_Transfer_Done) // Check if the event includes a transfer done event.
       {
           sl_power_manager_remove_em_requirement(SL_POWER_MANAGER_EM1); // Remove energy mode requirement EM1.
 
@@ -126,7 +137,7 @@ void Temperature_State_Machine(uint32_t Event)
 
           NVIC_DisableIRQ(I2C0_IRQn); // Disable the I2C0 interrupt.
 
-          LOG_INFO("Temperature = %f C\n\r", ConvertValueToCelcius()); // Log the temperature in Celsius.
+          SendTemp_ble();
 
           Next_State = StateA_IDLE; // Set the next state to StateA_IDLE.
       }
@@ -140,6 +151,8 @@ void Temperature_State_Machine(uint32_t Event)
       break;
   }
 }
+return;
+}
 
 
 
@@ -151,8 +164,9 @@ void schedulerSetEventUF()
     // Enter a critical section to prevent interrupt nesting.
     CORE_ENTER_CRITICAL();
 
+    sl_bt_external_signal(evt_LETIMER0_UF);
     // Set the global variable my_event to indicate an underflow event.
-    my_event |= evt_LETIMER0_UF;
+    //my_event |= evt_LETIMER0_UF;
 
     // Exit the critical section.
     CORE_EXIT_CRITICAL();
@@ -167,8 +181,9 @@ void schedulerSetEventCOMP1()
     // Enter a critical section to prevent nesting of interrupts.
     CORE_ENTER_CRITICAL();
 
+    sl_bt_external_signal(evt_COMP1);
     // Set the global variable 'my_event' to indicate an underflow event for COMP1.
-    my_event |= evt_COMP1;
+    //my_event |= evt_COMP1;
 
     // Exit the critical section.
     CORE_EXIT_CRITICAL();
@@ -184,15 +199,16 @@ void schedulerSetEventTransferDone()
     // Enter a critical section to prevent nesting of interrupts.
     CORE_ENTER_CRITICAL();
 
+    sl_bt_external_signal(evt_Transfer_Done);
     // Set the global variable 'my_event' to indicate a transfer completion event.
-    my_event |= evt_Transfer_Done;
+    //my_event |= evt_Transfer_Done;
 
     // Exit the critical section.
     CORE_EXIT_CRITICAL();
 } // End of schedulerSetEventTransferDone()
 
 
-uint32_t getNextEvent()
+/*uint32_t getNextEvent()
 {
     // Declare a variable to store the retrieved event.
     static uint32_t the_event = evt_no_event;
@@ -235,7 +251,7 @@ uint32_t getNextEvent()
 
     // Return the retrieved event.
     return (the_event);
-} // getNextEvent()
+} // getNextEvent() */
 
 
 

@@ -97,11 +97,11 @@ void Read_i2c()
 
 
 // Calculation reference taken from the datasheet (https://www.silabs.com/documents/public/data-sheets/Si7021-A20.pdf)
-float ConvertValueToCelcius()
+int32_t ConvertValueToCelcius()
 {
     // Declare variables to store the raw temperature value and the temperature in Celsius.
     uint16_t GetTemp;
-    float TempCelcius;
+    int16_t TempCelcius;
 
     // Combine the two bytes of the raw temperature value to form a 16-bit value.
     GetTemp = (read_data[0] << 8); // Shift the first byte to the left by 8 bits.

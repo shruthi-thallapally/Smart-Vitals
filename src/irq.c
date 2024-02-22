@@ -16,13 +16,13 @@
 #include "src/timers.h"
 #include "src/scheduler.h"
 #include "em_i2c.h"
-
-int rollover_value=0;  // Initialize a variable to hold the rollover value, starting at 0.
+#include "src/ble.h"
 
 uint32_t letimerMilliseconds()  // Define a function named letimerMilliseconds returning an unsigned 32-bit integer.
 {
   uint32_t time_ms;  // Declare a variable to store the time in milliseconds.
-  time_ms = (rollover_value*3000)+(VALUE_TO_LOAD_COMP0-LETIMER_CounterGet(LETIMER0));  // Calculate the time in milliseconds based on the rollover value, the value to load into the comparator, and the current counter value.
+  ble_data_struct_t *ble_Data = get_ble_DataPtr();  // Calculate the time in milliseconds based on the rollover value, the value to load into the comparator, and the current counter value.
+  time_ms = ((ble_Data->Rollover_Count)*3000);
   return time_ms;  // Return the calculated time in milliseconds.
 }
 
@@ -30,6 +30,8 @@ uint32_t letimerMilliseconds()  // Define a function named letimerMilliseconds r
 // Function definition for the LETIMER0 interrupt handler
 void LETIMER0_IRQHandler(void)
 {
+    ble_data_struct_t *ble_Data = get_ble_DataPtr();
+
     // Retrieve the enabled interrupt flags from LETIMER0.
     uint32_t value = LETIMER_IntGetEnabled(LETIMER0);
 
@@ -42,20 +44,14 @@ void LETIMER0_IRQHandler(void)
         LETIMER_IntDisable(LETIMER0, LETIMER_IEN_COMP1); // Disable COMP1 interrupt
         schedulerSetEventCOMP1(); // Set an event for COMP1 in the scheduler
     }
-    else if(value & LETIMER_IF_UF)
+    if(value & LETIMER_IF_UF)
     {
         // Check if the UF (underflow) interrupt flag is set
         schedulerSetEventUF(); // Set an event for underflow in the scheduler
 
-        // Enter critical section to ensure atomicity of rollover_value update
-        CORE_DECLARE_IRQ_STATE;
-        CORE_ENTER_CRITICAL();
-
         // Increment rollover_value
-        rollover_value+=1;
+        ble_Data->Rollover_Count+=1;
 
-        // Exit critical section
-        CORE_EXIT_CRITICAL();
     }
 
 }

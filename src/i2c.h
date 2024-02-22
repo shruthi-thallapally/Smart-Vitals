@@ -53,7 +53,7 @@ void Read_i2c();
  *
  * @return The temperature value in Celsius.
  */
-float ConvertValueToCelcius();
+int32_t ConvertValueToCelcius();
 
 
 #endif /* SRC_I2C_H_ */

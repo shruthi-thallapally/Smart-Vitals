@@ -148,6 +148,8 @@ void timerWaitUs_irq(uint32_t us_wait)
       required_cnt = VALUE_TO_LOAD_COMP0 - (0xFFFF - required_cnt);
   }
 
+  LETIMER_IntClear(LETIMER0, LETIMER_IFC_COMP1);
+
   // Set the compare value for the COMP1 register to trigger an interrupt.
   LETIMER_CompareSet(LETIMER0, 1, required_cnt);
 

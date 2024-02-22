@@ -65,6 +65,7 @@
 #include "src/scheduler.h"
 #include "src/i2c.h"
 #include "em_letimer.h"
+#include "src/ble.h"
 
 
 // Students: Here is an example of how to correctly include logging functions in
@@ -174,13 +175,20 @@ SL_WEAK void app_init(void)
 
   init_LETIMER0(); // Calling LETIMER0 Init to initialize TIMER0
 
-  if(LOWEST_ENERGY_MODE == 1)
+  #if (LOWEST_ENERGY_MODE > 2)
+       LOWEST_ENERGY_MODE = 2;
+  #endif
+
+  if((LOWEST_ENERGY_MODE >0) & (LOWEST_ENERGY_MODE < 3))
   {
-      sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM1); // adding a power requirement for EM1
-  }
-  else if(LOWEST_ENERGY_MODE == 2)
-  {
-      sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM2); // adding a power requirement for EM2
+      if(LOWEST_ENERGY_MODE == 1)
+      {
+          sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM1); // adding a power requirement for EM1
+      }
+      else if(LOWEST_ENERGY_MODE == 2)
+      {
+          sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM2); // adding a power requirement for EM2
+      }
   }
 
   NVIC_ClearPendingIRQ(LETIMER0_IRQn); // Clearing pending IRQ
@@ -200,13 +208,13 @@ SL_WEAK void app_process_action(void)
   //         We will create/use a scheme that is far more energy efficient in
   //         later assignments.
   // Declare a variable to store the retrieved event flag.
-  uint32_t event;
+  //uint32_t event;
 
   // Retrieve the next event flag from the system.
-  event = getNextEvent();
+  //event = getNextEvent();
 
   // Calling state machine for temperature reading
-  Temperature_State_Machine(event);
+  //Temperature_State_Machine(event);
 
 } // app_process_action()
 
@@ -235,10 +243,10 @@ void sl_bt_on_event(sl_bt_msg_t *evt)
   // Some events require responses from our application code,
   // and don’t necessarily advance our state machines.
   // For A5 uncomment the next 2 function calls
-  // handle_ble_event(evt); // put this code in ble.c/.h
+  handle_ble_event(evt); // put this code in ble.c/.h
 
   // sequence through states driven by events
-  // state_machine(evt);    // put this code in scheduler.c/.h
+  state_machine(evt);    // put this code in scheduler.c/.h
 
 
 } // sl_bt_on_event()
