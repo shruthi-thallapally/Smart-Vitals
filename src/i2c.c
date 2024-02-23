@@ -101,7 +101,7 @@ int32_t ConvertValueToCelcius()
 {
     // Declare variables to store the raw temperature value and the temperature in Celsius.
     uint16_t GetTemp;
-    int16_t TempCelcius;
+    int32_t TempCelcius;
 
     // Combine the two bytes of the raw temperature value to form a 16-bit value.
     GetTemp = (read_data[0] << 8); // Shift the first byte to the left by 8 bits.

@@ -11,6 +11,7 @@
 #include "src/log.h"
 
 #include "src/ble.h"
+#include "src/i2c.h"
 #include "sl_bt_api.h"
 
 #define LOG_PARAMETER_VALUE 1
@@ -20,14 +21,19 @@ uint16_t connection_interval = 0x3c;   //Given connection interval is 70msecs
 uint16_t slave_latency = 0x03;         //slave can skip upto 3 connection events by following (3*70 = 210msecs < 250msecs ), Hence slave latency value is 3
 uint16_t supervision_timeout = 0x50;   // Supervision timeout is always one more than slave latency which is 800msecs (1+slave_latency)
 
-sl_status_t sc=0;
+// Declaration of a variable 'sc' of type 'sl_status_t' and initialization to 0
+sl_status_t sc = 0;
 
+// Declaration of a structure 'ble_data_struct_t' variable named 'ble_Data'
 ble_data_struct_t ble_Data;
 
+// Function definition for returning a pointer to a structure of type 'ble_data_struct_t'
 ble_data_struct_t * get_ble_DataPtr()
 {
+  // Return the memory address of the 'ble_Data' structure
   return (&ble_Data);
 }
+
 
 void handle_ble_event(sl_bt_msg_t *evt)
 {
@@ -107,17 +113,16 @@ void handle_ble_event(sl_bt_msg_t *evt)
                   LOG_ERROR("sl_bt_advertiser_start() returned != 0 status=0x%04x\n\r", (unsigned int)sc);
               }
 
-              //initialize connection and indication flags
+
               ble_Data->Connected           = false;
               ble_Data->Indication          = false;
               ble_Data->Indication_InFlight = false;
             break;
          case sl_bt_evt_connection_opened_id:
-            // handle open event
-           //set connection flag as true
+
            ble_Data->Connected = true;
 
-           //get value of connection handle
+
            ble_Data->Connection_Handle = evt->data.evt_connection_opened.connection;
 
             /*
@@ -149,14 +154,14 @@ void handle_ble_event(sl_bt_msg_t *evt)
                LOG_ERROR("sl_bt_connection_set_parameters() returned != 0 status=0x%04x\n\r", (unsigned int)sc);
            }
            break;
+
          case sl_bt_evt_connection_closed_id:
-            // handle close event
-           //turn off all connection and indication flags
+           // handle connection closed event
            ble_Data->Connected           = false;
            ble_Data->Indication          = false;
            ble_Data->Indication_InFlight = false;
 
-           //Start advertising of a given advertising set with specified discoverable and connectable modes.
+
            sc = sl_bt_advertiser_start(ble_Data->Advertising_Set_Handle,
                                             sl_bt_advertiser_general_discoverable,
                                             sl_bt_advertiser_connectable_scannable);
@@ -166,7 +171,7 @@ void handle_ble_event(sl_bt_msg_t *evt)
            }
            break;
 
-            //Triggered whenever the connection parameters are changed and at any time a connection is established
+
             case sl_bt_evt_connection_parameters_id:
               // handle connection parameters event
             #if LOG_PARAMETER_VALUE
@@ -180,7 +185,7 @@ void handle_ble_event(sl_bt_msg_t *evt)
 
             break;
 
-            //Indicates that the external signals have been received
+
             case sl_bt_evt_system_external_signal_id:
 
             break;
@@ -188,42 +193,38 @@ void handle_ble_event(sl_bt_msg_t *evt)
 
             case sl_bt_evt_gatt_server_characteristic_status_id:
 
-            //check if temperature measurement characteristic is changed
-
-            if(evt->data.evt_gatt_server_characteristic_status.characteristic == gattdb_temperature_measurement)
+              // Check if the status flag indicates client configuration
+              if(evt->data.evt_gatt_server_characteristic_status.characteristic == gattdb_temperature_measurement)
               {
 
-                   //check if any status flag has been changed by client
-                   if (sl_bt_gatt_server_client_config == (sl_bt_gatt_server_characteristic_status_flag_t)
-                          evt->data.evt_gatt_server_characteristic_status.status_flags)
-                   {
+                if (sl_bt_gatt_server_client_config == (sl_bt_gatt_server_characteristic_status_flag_t)
+                                        evt->data.evt_gatt_server_characteristic_status.status_flags)
+                {
 
-                   //check if indication flag is disabled
-                   if(evt->data.evt_gatt_server_characteristic_status.client_config_flags == gatt_disable)
-                   {
+                 // Check if client configuration flags indicate disabling
+                 if(evt->data.evt_gatt_server_characteristic_status.client_config_flags == gatt_disable)
+                 {
                          ble_Data->Indication = false;
 
-                   }
+                 }
+                 // Check if client configuration flags indicate indication
+                 else if(evt->data.evt_gatt_server_characteristic_status.client_config_flags == gatt_indication)
+                 {
+                           ble_Data->Indication = true;
+                 }
 
-                   //check if indication flag is enabled
-                   else if(evt->data.evt_gatt_server_characteristic_status.client_config_flags == gatt_indication)
-                   {
-                         ble_Data->Indication = true;
-                   }
+               }
+               // Check if the status flag indicates server confirmation
+               if (sl_bt_gatt_server_confirmation == (sl_bt_gatt_server_characteristic_status_flag_t)
+                                        evt->data.evt_gatt_server_characteristic_status.status_flags)
+               {
+                    ble_Data->Indication_InFlight = false;
+               }
 
-                   }
-
-                  //check if indication confirmation has been received from client
-                  if (sl_bt_gatt_server_confirmation == (sl_bt_gatt_server_characteristic_status_flag_t)
-                          evt->data.evt_gatt_server_characteristic_status.status_flags)
-                  {
-                         ble_Data->Indication_InFlight = false;
-                  }
-                      //track indication bool
               }
              break;
 
-             //event indicates confirmation from the remote GATT client has not been received within 30 seconds after an indication was sent
+
              case sl_bt_evt_gatt_server_indication_timeout_id:
 
              LOG_INFO("server indication timeout\n\r");
@@ -236,56 +237,62 @@ void handle_ble_event(sl_bt_msg_t *evt)
 
 void SendTemp_ble()
 {
+  // Declaration of local variables
+  uint8_t htm_temperature_buffer[5]; // Buffer to hold temperature data
+  uint8_t *p = htm_temperature_buffer; // Pointer to the buffer
+  uint32_t htm_temperature_flt; // Variable to hold the temperature in floating point format
+  uint8_t flags = 0x00; // Flags variable initialized to 0
 
-  uint8_t htm_temperature_buffer[5];
-  uint8_t *p = htm_temperature_buffer;
-  uint32_t htm_temperature_flt;
-  uint8_t flags = 0x00;
-
+  // Get a pointer to the BLE data structure
   ble_data_struct_t *ble_Data = get_ble_DataPtr();
 
-  //check if bluetooth is connected
+  // Check if the device is connected to a BLE client
   if(ble_Data->Connected == true)
   {
+    // Convert temperature value to Celsius
+    int32_t temperature_in_celcius = ConvertValueToCelcius();
 
-      //get temperature value from sensor in celcius
-      int32_t temperature_in_celcius = ConvertValueToCelcius();
+    // Pack flags into the buffer
+    UINT8_TO_BITSTREAM(p, flags);
 
-      UINT8_TO_BITSTREAM(p, flags);
+    // Convert temperature to floating point with 3 decimal places
+    htm_temperature_flt = INT32_TO_FLOAT(temperature_in_celcius*1000, -3);
 
-      htm_temperature_flt = INT32_TO_FLOAT(temperature_in_celcius*1000, -3);
+    // Pack the floating point temperature value into the buffer
+    UINT32_TO_BITSTREAM(p, htm_temperature_flt);
 
-      UINT32_TO_BITSTREAM(p, htm_temperature_flt);
+    // Write the temperature value to the GATT database
+    sl_status_t sc = sl_bt_gatt_server_write_attribute_value(gattdb_temperature_measurement,
+                                                             0,
+                                                             5,
+                                                             &htm_temperature_buffer[0]);
 
-      //write temperature value in gatt database
-      sl_status_t sc = sl_bt_gatt_server_write_attribute_value(gattdb_temperature_measurement,
-                                                               0,
-                                                               5,
-                                                               &htm_temperature_buffer[0]);
+    // Check if writing to the GATT database was successful
+    if(sc != SL_STATUS_OK)
+    {
+      LOG_ERROR("sl_bt_gatt_server_write_attribute_value() returned != 0 status=0x%04x\n\r", (unsigned int)sc);
+    }
 
-      if(sc != SL_STATUS_OK)
-      {
-          LOG_ERROR("sl_bt_gatt_server_write_attribute_value() returned != 0 status=0x%04x\n\r", (unsigned int)sc);
-      }
-
-      //check if indication is on
-      if (ble_Data->Indication == true && ble_Data->Indication_InFlight == false)
-      {
-
+    // Check if indication is enabled and there is no indication already in flight
+    if (ble_Data->Indication == true && ble_Data->Indication_InFlight == false)
+    {
+      // Send indication to the BLE client
       sc = sl_bt_gatt_server_send_indication(ble_Data->Connection_Handle,
-                                                 gattdb_temperature_measurement,
-                                                 5,
-                                                 &htm_temperature_buffer[0]);
+                                             gattdb_temperature_measurement,
+                                             5,
+                                             &htm_temperature_buffer[0]);
+
+      // Check if sending indication was successful
       if(sc != SL_STATUS_OK)
       {
-          LOG_ERROR("sl_bt_gatt_server_send_indication() returned != 0 status=0x%04x\n\r", (unsigned int)sc);
+        LOG_ERROR("sl_bt_gatt_server_send_indication() returned != 0 status=0x%04x\n\r", (unsigned int)sc);
       }
       else
       {
-          ble_Data->Indication_InFlight = true;
-          LOG_INFO("Sent HTM indication, temperature=%d\n\r", temperature_in_celcius);
+        // Mark indication as in flight
+        ble_Data->Indication_InFlight = true;
+        LOG_INFO("Sent indication to get temperature=%d\n\r", temperature_in_celcius);
       }
-      }
+    }
   }
-
 }

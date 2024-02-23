@@ -59,6 +59,17 @@
 
 #include "src/ble_device_type.h"
 
+#include "src/gpio.h"
+#include "src/lcd.h"
+#include "src/oscillators.h"
+#include "src/timers.h"
+#include "src/irq.h"
+#include "src/scheduler.h"
+#include "src/i2c.h"
+#include "em_letimer.h"
+#include "src/ble.h"
+
+
 // #define's to control the energy mode selection between EM0,EM1,EM2 & EM3
 //#define LOWEST_ENERGY_MODE 0
 //#define LOWEST_ENERGY_MODE 1
