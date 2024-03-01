@@ -38,6 +38,14 @@
 #define SRC_LCD_H_
 
 
+#include "ble_device_type.h"
+#include "gpio.h"
+#include "string.h"
+#include "sl_bt_api.h"
+#include "glib.h"
+#include "dmd.h"
+
+
 
 /**
  * Display row definitions, used for writing specific content based on

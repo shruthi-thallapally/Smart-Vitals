@@ -133,7 +133,7 @@ void state_machine(sl_bt_msg_t *evt)
       {
           sl_power_manager_remove_em_requirement(SL_POWER_MANAGER_EM1); // Remove energy mode requirement EM1.
 
-          sensor_disable(); // Disable the sensor.
+          //sensor_disable(); // Disable the sensor.
 
           NVIC_DisableIRQ(I2C0_IRQn); // Disable the I2C0 interrupt.
 

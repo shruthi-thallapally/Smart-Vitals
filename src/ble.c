@@ -14,7 +14,7 @@
 #include "src/i2c.h"
 #include "sl_bt_api.h"
 
-#define LOG_PARAMETER_VALUE 1
+#define LOG_PARAMETER_VALUE 0
 
 uint32_t advertising_interval=0x190;   //Given advertisement interval is 250msecs
 uint16_t connection_interval = 0x3c;   //Given connection interval is 70msecs
@@ -112,7 +112,18 @@ void handle_ble_event(sl_bt_msg_t *evt)
               {
                   LOG_ERROR("sl_bt_advertiser_start() returned != 0 status=0x%04x\n\r", (unsigned int)sc);
               }
-
+              sensor_enable();
+              displayInit();
+              displayPrintf(DISPLAY_ROW_NAME, "Server");
+              displayPrintf(DISPLAY_ROW_BTADDR, "%02X:%02X:%02X:%02X:%02X:%02X",
+                  ble_Data->My_Address.addr[0],
+                  ble_Data->My_Address.addr[1],
+                  ble_Data->My_Address.addr[2],
+                  ble_Data->My_Address.addr[3],
+                  ble_Data->My_Address.addr[4],
+                  ble_Data->My_Address.addr[5]);
+              displayPrintf(DISPLAY_ROW_CONNECTION, "Advertising");
+              displayPrintf(DISPLAY_ROW_ASSIGNMENT, "A6");
 
               ble_Data->Connected           = false;
               ble_Data->Indication          = false;
@@ -153,6 +164,7 @@ void handle_ble_event(sl_bt_msg_t *evt)
            {
                LOG_ERROR("sl_bt_connection_set_parameters() returned != 0 status=0x%04x\n\r", (unsigned int)sc);
            }
+           displayPrintf(DISPLAY_ROW_CONNECTION, "Connected");
            break;
 
          case sl_bt_evt_connection_closed_id:
@@ -169,6 +181,8 @@ void handle_ble_event(sl_bt_msg_t *evt)
            {
                 LOG_ERROR("sl_bt_advertiser_start() returned != 0 status=0x%04x\n\r", (unsigned int)sc);
            }
+           displayPrintf(DISPLAY_ROW_CONNECTION, "Advertising");
+           displayPrintf(DISPLAY_ROW_TEMPVALUE, "");
            break;
 
 
@@ -190,6 +204,12 @@ void handle_ble_event(sl_bt_msg_t *evt)
 
             break;
 
+            case sl_bt_evt_system_soft_timer_id:
+
+                  displayUpdate();
+
+            break;
+
 
             case sl_bt_evt_gatt_server_characteristic_status_id:
 
@@ -205,6 +225,7 @@ void handle_ble_event(sl_bt_msg_t *evt)
                  if(evt->data.evt_gatt_server_characteristic_status.client_config_flags == gatt_disable)
                  {
                          ble_Data->Indication = false;
+                         displayPrintf(DISPLAY_ROW_TEMPVALUE, "");
 
                  }
                  // Check if client configuration flags indicate indication
@@ -291,8 +312,10 @@ void SendTemp_ble()
       {
         // Mark indication as in flight
         ble_Data->Indication_InFlight = true;
-        LOG_INFO("Sent indication to get temperature=%d\n\r", temperature_in_celcius);
+        LOG_INFO("Sent indication to get Temp=%d\n\r", temperature_in_celcius);
+
       }
+      displayPrintf(DISPLAY_ROW_TEMPVALUE, "Temp=%d", temperature_in_celcius);
     }
   }
 }

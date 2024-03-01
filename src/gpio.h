@@ -55,6 +55,7 @@ void sensor_enable();
 //Function to disable sensor
 void sensor_disable();
 
+void gpioSetDisplayExtcomin(bool data );
 
 
 #endif /* SRC_GPIO_H_ */

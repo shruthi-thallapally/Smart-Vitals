@@ -45,7 +45,8 @@
 #define LED1_pin    (5) // Pin 5 of PF is connected to on-board UIF LED1
 #define SENSOR_port (3) // UIF_LED's are associated with port f(PD), whose value is 3 as per em_gpio.h enum declarations.
 #define SENSOR_pin  (15)// Pin 15 of PD is connected to sensor
-
+#define LCD_port    (3)
+#define LCD_pin     (13)
 
 // Set GPIO drive strengths and modes of operation
 void gpioInit()
@@ -62,6 +63,9 @@ void gpioInit()
 
   GPIO_DriveStrengthSet(SENSOR_port, gpioDriveStrengthWeakAlternateWeak);
   GPIO_PinModeSet(SENSOR_port, SENSOR_pin, gpioModePushPull, false);
+
+  GPIO_DriveStrengthSet(LCD_port, gpioDriveStrengthWeakAlternateWeak);
+  GPIO_PinModeSet(LCD_port, LCD_pin, gpioModePushPull, false);
 
 } // gpioInit()
 
@@ -99,6 +103,17 @@ void sensor_disable()
   GPIO_PinOutClear(SENSOR_port, SENSOR_pin);
 }
 
+void gpioSetDisplayExtcomin(bool data )
+{
+  if(data == true)
+   {
+       GPIO_PinOutSet(LCD_port, LCD_pin);
+   }
+  else
+   {
+       GPIO_PinOutClear(LCD_port, LCD_pin);
+   }
+}
 
 
 
