@@ -16,7 +16,7 @@
 #include "src/gpio.h"
 
 
-void state_machine(sl_bt_msg_t *evt);
+void temperature_state_machine(sl_bt_msg_t *evt);
 
 /**
  * @brief Sets an event flag for underflow event from LETIMER0.
@@ -58,5 +58,7 @@ void schedulerSetEventTransferDone();
  * @return The retrieved event flag.
  */
 uint32_t getNextEvent();
+
+void discovery_state_machine(sl_bt_msg_t *evt);
 
 #endif /* SRC_SCHEDULER_H_ */

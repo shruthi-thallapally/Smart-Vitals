@@ -55,6 +55,7 @@ void sensor_enable();
 //Function to disable sensor
 void sensor_disable();
 
+// Function for display (EXTCOMIN) signal
 void gpioSetDisplayExtcomin(bool data );
 
 
