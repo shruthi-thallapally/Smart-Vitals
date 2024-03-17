@@ -40,13 +40,6 @@
 // to determine the correct values for these.
 // If these links have gone bad, consult the reference manual and/or the datasheet for the MCU.
 
-#define LED_port    (5) // UIF_LED's are associated with port f(PF), whose value is 5 as per em_gpio.h enum declarations.
-#define LED0_pin    (4) // Pin 4 of PF is connected to on-board UIF LED0
-#define LED1_pin    (5) // Pin 5 of PF is connected to on-board UIF LED1
-#define SENSOR_port (3) // UIF_LED's are associated with port f(PD), whose value is 3 as per em_gpio.h enum declarations.
-#define SENSOR_pin  (15)// Pin 15 of PD is connected to sensor
-#define LCD_port    (3) // Port D for LCD
-#define LCD_pin     (13) // Pin 13 of LCD in port D
 
 // Set GPIO drive strengths and modes of operation
 void gpioInit()
@@ -55,7 +48,7 @@ void gpioInit()
 
   // Set the drive strength of the GPIO port connected to LEDs to strong alternate strong, which allows for a higher current draw (up to 10mA).
   // This is useful for driving higher power components like LEDs that may require more current.
-  GPIO_DriveStrengthSet(LED_port, gpioDriveStrengthStrongAlternateStrong); // Strong, 10mA
+  //GPIO_DriveStrengthSet(LED_port, gpioDriveStrengthStrongAlternateStrong); // Strong, 10mA
 
   // Set the drive strength of the GPIO port connected to LEDs to weak alternate weak, reducing the current draw to a lower level (up to 1mA).
   // This configuration conserves power and is suitable for low-power applications or when high current is not needed.
@@ -85,7 +78,8 @@ void gpioInit()
   // the LCD's operation by driving the pin high or low, suitable for sending control signals to the LCD.
   GPIO_PinModeSet(LCD_port, LCD_pin, gpioModePushPull, false);
 
-
+  GPIO_PinModeSet(BUTTON_PORT, BUTTON_PIN, gpioModeInputPullFilter, true);
+  GPIO_ExtIntConfig(BUTTON_PORT, BUTTON_PIN, BUTTON_PIN, true, true, true);
 } // gpioInit()
 
 

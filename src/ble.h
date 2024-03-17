@@ -2,7 +2,7 @@
  * ble.h
  *
  *  Created on: Feb 18, 2024
- *      Author: Tharuni Gelli
+ *      Author: tharuni gelli
  */
 
 #ifndef SRC_BLE_H_
@@ -24,6 +24,22 @@
                                    *(p)++ = (uint8_t)((n) >> 16); *(p)++ = (uint8_t)((n) >> 24); }
 #define INT32_TO_FLOAT(m, e) ( (int32_t) (((uint32_t) m) & 0x00FFFFFFU) | (((uint32_t) e) << 24))
 
+#define QUEUE_DEPTH 16
+
+#define MAX_BUFFER_LENGTH 5
+
+typedef struct {
+
+  uint16_t       charHandle;                 // GATT DB handle from gatt_db.h
+  uint32_t       bufLength;                  // Number of bytes written to field buffer[5]
+  uint8_t        buffer[MAX_BUFFER_LENGTH];  // The actual data buffer for the indication,
+                                             //   need 5-bytes for HTM and 1-byte for button_state.
+                                             //   For testing, test lengths 1 through 5,
+                                             //   a length of 0 shall be considered an
+                                             //   error, as well as lengths > 5
+
+} queue_struct_t;
+
 // Define a structure `ble_data_struct_t` to hold BLE device data and state.
 typedef struct
 {
@@ -40,6 +56,24 @@ typedef struct
   uint8_t * Char_Value;           // Pointer to the value of the GATT characteristic mentioned above.
   bool Gatt_Procedure;            // Flag to indicate if a GATT procedure is currently in progress.
 
+  bool Button_Indication;
+
+  //flag to check if push button is pressed
+    bool Button_Pressed;
+    //flag to check if server and client are bonded
+    bool Bonded;
+    //variable to save bonding passkey
+    uint32_t passkey;
+
+    //array of structure for indication data
+    queue_struct_t Indication_Buffer[QUEUE_DEPTH];
+    //variable to store read and write pointer of circular buffer
+    uint8_t r_ptr, w_ptr;
+    //flag to check if the circular buffer is full
+    bool full;
+    //variable to keep track of queued indications
+    uint8_t Queued_Indication;
+
 } ble_data_struct_t; // End of `ble_data_struct_t` structure definition.
 
 /*
@@ -51,6 +85,14 @@ typedef struct
  *         cannot be accessed or has not been initialized, the function may return NULL.
  */
 ble_data_struct_t* get_ble_DataPtr(void);
+
+uint32_t next_ptr(uint32_t ptr);
+
+int write_queue (queue_struct_t write_data);
+
+int read_queue ();
+
+
 
 #if DEVICE_IS_BLE_SERVER
 
@@ -64,6 +106,8 @@ ble_data_struct_t* get_ble_DataPtr(void);
  * the current temperature data.
  */
 void SendTemp_ble();
+
+void SendButtonState_ble(uint8_t value);
 
 
 #endif
@@ -85,5 +129,10 @@ void SendTemp_ble();
  *       stability and functionality of the BLE communication.
  */
 void handle_ble_event(sl_bt_msg_t *evt);
+
+
+
+
+
 
 #endif /* SRC_BLE_H_ */

@@ -15,6 +15,25 @@
 #include "src/oscillators.h"
 #include "src/gpio.h"
 
+// Define an enumeration representing various events.
+enum
+{
+    // Define an event flag indicating no event.
+    evt_no_event = 0,
+
+    // Define an event flag indicating an underflow event from LETIMER0.
+    evt_LETIMER0_UF,
+
+    // Define an event indicating value reach for COMP1.
+    evt_COMP1,
+
+    // Define an event indicating transfer done for i2c.
+    evt_Transfer_Done,
+
+    evt_Button_Pressed,
+
+    evt_Button_Released,
+};
 
 void temperature_state_machine(sl_bt_msg_t *evt);
 
@@ -48,6 +67,10 @@ void schedulerSetEventCOMP1();
  * @return void
  */
 void schedulerSetEventTransferDone();
+
+void schedulerSetEventButtonPressed();
+
+void schedulerSetEventButtonReleased();
 
 /**
  * @brief Retrieves and clears the next event flag.

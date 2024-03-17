@@ -12,11 +12,8 @@
 #include "src/log.h"
 
 #include "app.h"
-#include "src/irq.h"
-#include "src/timers.h"
-#include "src/scheduler.h"
 #include "em_i2c.h"
-#include "src/ble.h"
+
 
 uint32_t letimerMilliseconds()  // Define a function named letimerMilliseconds returning an unsigned 32-bit integer.
 {
@@ -87,5 +84,33 @@ void I2C0_IRQHandler(void)
   }
 }
 
+void GPIO_EVEN_IRQHandler(void)
+{
+  ble_data_struct_t *ble_Data = get_ble_DataPtr();
+
+  // determine pending interrupts in peripheral
+  uint32_t value = GPIO_IntGet();
+
+  GPIO_IntClear(value);
+
+  //get the push button status
+  uint8_t Button_Status = GPIO_PinInGet(BUTTON_PORT, BUTTON_PIN);
+
+  //check if the interrupt triggered was from PB0
+  if(value == 64)
+  {
+      if(!Button_Status)
+      {
+          ble_Data->Button_Pressed = true;
+          schedulerSetEventButtonPressed();
+      }
+
+      else
+      {
+          ble_Data->Button_Pressed = false;
+          schedulerSetEventButtonReleased();
+      }
+  }
+}
 
 

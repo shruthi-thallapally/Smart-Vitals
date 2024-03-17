@@ -37,7 +37,7 @@ void init_LETIMER0 ()
     const LETIMER_Init_TypeDef letimerInitData =
     {
         false,                  // Enable or disable the LETIMER after initialization
-        true,                   // Start counting when initialized
+        false,                   // Start counting when initialized
         true,                   // Counter continues while the CPU is halted in debug mode
         false,                  // Debug mode will not affect outputs
         0,                      // Counter value to load into COMP0 after overflow

@@ -32,21 +32,7 @@ static const uint8_t thermometer_charac[2] = { 0x1c, 0x2a };
 //This variable is typically used to store the status of a function call in Silicon Labs' SDK, where 0 usually indicates success.
 sl_status_t rc=0;
 
-// Define an enumeration representing various events.
-enum
-{
-    // Define an event flag indicating no event.
-    evt_no_event = 0,
 
-    // Define an event flag indicating an underflow event from LETIMER0.
-    evt_LETIMER0_UF,
-
-    // Define an event indicating value reach for COMP1.
-    evt_COMP1,
-
-    // Define an event indicating transfer done for i2c.
-    evt_Transfer_Done,
-};
 
 //enum to define scheduler events
 typedef enum uint32_t
@@ -92,7 +78,6 @@ void temperature_state_machine(sl_bt_msg_t *evt)
 
       if(evt->data.evt_system_external_signal.extsignals == evt_LETIMER0_UF) // Check if the event includes LETIMER0 underflow.
       {
-          sensor_enable(); // Enable the sensor.
 
           timerWaitUs_irq(80000); // Wait for a certain amount of time using a timer interrupt.
 
@@ -154,8 +139,6 @@ void temperature_state_machine(sl_bt_msg_t *evt)
       if(evt->data.evt_system_external_signal.extsignals == evt_Transfer_Done) // Check if the event includes a transfer done event.
       {
           sl_power_manager_remove_em_requirement(SL_POWER_MANAGER_EM1); // Remove energy mode requirement EM1.
-
-          //sensor_disable(); // Disable the sensor.
 
           NVIC_DisableIRQ(I2C0_IRQn); // Disable the I2C0 interrupt.
 
@@ -366,6 +349,38 @@ void schedulerSetEventTransferDone()
     // Exit the critical section.
     CORE_EXIT_CRITICAL();
 } // End of schedulerSetEventTransferDone()
+
+// scheduler routine to set a scheduler event
+void schedulerSetEventButtonPressed()
+{
+
+  // enter critical section
+  CORE_DECLARE_IRQ_STATE;
+  CORE_ENTER_CRITICAL();
+
+  sl_bt_external_signal(evt_Button_Pressed);
+  // set the event in your data structure, this is a read-modify-write
+
+  // exit critical section
+  CORE_EXIT_CRITICAL();
+
+} // schedulerSetEventXXX()
+
+// scheduler routine to set a scheduler event
+void schedulerSetEventButtonReleased()
+{
+
+  // enter critical section
+  CORE_DECLARE_IRQ_STATE;
+  CORE_ENTER_CRITICAL();
+
+  sl_bt_external_signal(evt_Button_Released);
+  // set the event in your data structure, this is a read-modify-write
+
+  // exit critical section
+  CORE_EXIT_CRITICAL();
+
+} // schedulerSetEventXXX()
 
 
 /*uint32_t getNextEvent()
