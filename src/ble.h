@@ -55,26 +55,15 @@ typedef struct
   uint16_t Char_Handle;           // Handle to identify a specific GATT characteristic within the service.
   uint8_t * Char_Value;           // Pointer to the value of the GATT characteristic mentioned above.
   bool Gatt_Procedure;            // Flag to indicate if a GATT procedure is currently in progress.
-
   bool Button_Indication;
-
-  //flag to check if push button is pressed
-    bool Button_Pressed;
-    //flag to check if server and client are bonded
-    bool Bonded;
-    //variable to save bonding passkey
-    uint32_t passkey;
-
-    //array of structure for indication data
-    queue_struct_t Indication_Buffer[QUEUE_DEPTH];
-    //variable to store read and write pointer of circular buffer
-    uint8_t r_ptr, w_ptr;
-    //flag to check if the circular buffer is full
-    bool full;
-    //variable to keep track of queued indications
-    uint8_t Queued_Indication;
-
-} ble_data_struct_t; // End of `ble_data_struct_t` structure definition.
+  bool Button_Pressed;
+  bool Bonded;
+  queue_struct_t Indication_Buffer[QUEUE_DEPTH];
+  uint8_t r_ptr, w_ptr;
+  bool full;
+  uint8_t Queued_Indication;
+  uint32_t passkey;
+} ble_data_struct_t;
 
 /*
  * Retrieves a pointer to a BLE data structure. This function is used to access the global or
@@ -86,10 +75,54 @@ typedef struct
  */
 ble_data_struct_t* get_ble_DataPtr(void);
 
+/**
+ * @brief Calculates the next pointer in a series or structure.
+ *
+ * This function is designed to compute the address of the next element in a sequence or data structure,
+ * such as a linked list or an array. Given the current pointer's address, it calculates the address of the
+ * next element based on the size of the elements or a predefined step. This can be particularly useful in
+ * systems where manual pointer arithmetic is necessary to navigate through data structures efficiently.
+ *
+ * @param ptr The current pointer's address, represented as a 32-bit unsigned integer. This could be the address
+ * of the current element in a data structure from which the address of the next element is to be calculated.
+ *
+ * @return uint32_t The address of the next element in the sequence or data structure, also represented as a
+ * 32-bit unsigned integer. This value is calculated based on the current pointer's address and the predefined
+ * criteria or structure size.
+ */
 uint32_t next_ptr(uint32_t ptr);
 
+/**
+ * @brief Writes data to a specified queue.
+ *
+ * This function is responsible for adding data to a queue structure. It is typically used in scenarios where
+ * data needs to be stored temporarily before being processed or sent to another part of a system, such as in
+ * message passing or producer-consumer scenarios. The function ensures that the data is correctly added to the
+ * queue, managing any necessary synchronization or checking for available space to avoid overflows or data loss.
+ *
+ * @param write_data The data to be written to the queue. This parameter should be a structure that contains
+ * the data to be added, as well as any additional information needed to manage the queue, such as priority
+ * or identification information.
+ *
+ * @return int Returns a status code indicating the result of the operation. Common return values might include
+ * 0 for success, -1 for failure due to a full queue, or other codes indicating specific error conditions or
+ * requirements, such as needing to wait for space to become available.
+ */
 int write_queue (queue_struct_t write_data);
 
+/**
+ * @brief Reads and removes data from a specified queue.
+ *
+ * This function is designed to retrieve and remove the front item from a queue. It is commonly used in
+ * scenarios where data has been temporarily stored for sequential processing, such as in event handling systems,
+ * message queues, or data buffering applications. The function ensures that data is accessed in a first-in, first-out
+ * (FIFO) manner, and manages synchronization to prevent data corruption or access conflicts in concurrent environments.
+ *
+ * @return int Returns a status code indicating the result of the operation. Common return values might include
+ * 0 for success, indicating that data was successfully read and removed from the queue. Other return values
+ * may indicate failure conditions, such as an empty queue (-1), or specific error codes related to queue management
+ * or data integrity issues.
+ */
 int read_queue ();
 
 
@@ -107,6 +140,20 @@ int read_queue ();
  */
 void SendTemp_ble();
 
+/**
+ * @brief Sends the state of a button over BLE (Bluetooth Low Energy).
+ *
+ * This function is designed to transmit the current state of a button (e.g., pressed or released) over BLE to a connected
+ * device or central system. It is useful in applications where remote control or monitoring of button states is required,
+ * such as in smart home devices, remote controllers, or wearable technology. The function packages the button state into
+ * a suitable format for BLE transmission and manages the sending process, ensuring that the state is correctly communicated
+ * to the receiving device.
+ *
+ * @param value The current state of the button to be sent over BLE. This could be represented as a simple binary value,
+ * where 0 might indicate that the button is not pressed (released) and 1 indicates that the button is pressed.
+ *
+ * @return void
+ */
 void SendButtonState_ble(uint8_t value);
 
 
@@ -129,10 +176,6 @@ void SendButtonState_ble(uint8_t value);
  *       stability and functionality of the BLE communication.
  */
 void handle_ble_event(sl_bt_msg_t *evt);
-
-
-
-
 
 
 #endif /* SRC_BLE_H_ */

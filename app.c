@@ -194,6 +194,9 @@ SL_WEAK void app_init(void)
   NVIC_ClearPendingIRQ(LETIMER0_IRQn); // Clearing pending IRQ
   NVIC_EnableIRQ(LETIMER0_IRQn);    // Enabling Timer interrupt
 
+  NVIC_ClearPendingIRQ(GPIO_EVEN_IRQn); // Clearing pending IRQ
+  NVIC_EnableIRQ(GPIO_EVEN_IRQn); // Enabling GPIO interrupt
+
 } // app_init()
 
 
