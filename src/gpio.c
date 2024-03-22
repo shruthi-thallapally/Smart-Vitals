@@ -79,11 +79,14 @@ void gpioInit()
   GPIO_PinModeSet(LCD_port, LCD_pin, gpioModePushPull, false);
 
   // Configure GPIO pin mode for the button as input with pull-up and filter enabled
-  GPIO_PinModeSet(BUTTON_PORT, BUTTON_PIN, gpioModeInputPullFilter, true);
+  GPIO_PinModeSet(BUTTON_PORT, PB0_PIN, gpioModeInputPullFilter, true);
 
   // Configure external interrupt for the button pin
   // Parameters: Port, Pin, External interrupt number, Edge detection (true for both edges), Filter enable, Pull-up enable
-  GPIO_ExtIntConfig(BUTTON_PORT, BUTTON_PIN, BUTTON_PIN, true, true, true);
+  GPIO_ExtIntConfig(BUTTON_PORT, PB0_PIN, PB0_PIN, true, true, true);
+
+  GPIO_PinModeSet(BUTTON_PORT, PB1_PIN, gpioModeInputPullFilter, true);
+  GPIO_ExtIntConfig(BUTTON_PORT, PB1_PIN, PB1_PIN, true, true, true);
 
 } // gpioInit()
 

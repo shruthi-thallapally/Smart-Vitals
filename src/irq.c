@@ -94,7 +94,7 @@ void GPIO_EVEN_IRQHandler(void)
   GPIO_IntClear(value);
 
   //get the push button status
-  uint8_t Button_Status = GPIO_PinInGet(BUTTON_PORT, BUTTON_PIN);
+  uint8_t Button_Status = GPIO_PinInGet(BUTTON_PORT, PB0_PIN);
 
   //check if the interrupt triggered was from PB0
   if(value == 64)
@@ -112,5 +112,39 @@ void GPIO_EVEN_IRQHandler(void)
       }
   }
 }
+
+#if !DEVICE_IS_BLE_SERVER
+
+void GPIO_ODD_IRQHandler(void) {
+
+  ble_data_struct_t *ble_Data = get_ble_DataPtr();
+
+  // determine pending interrupts in peripheral
+  uint32_t value = GPIO_IntGet();
+
+  GPIO_IntClear(value);
+
+  //get the push button status
+  uint8_t button_status = GPIO_PinInGet(BUTTON_PORT, PB1_PIN);
+
+  //check if the interrupt triggered was from PB1
+  if(value == 128)
+  {
+
+      if(!button_status)
+      {
+          ble_Data->PB1_Button_Pressed = true;
+          schedulerSetEventButtonPressed();
+      }
+
+      else
+      {
+          ble_Data->PB1_Button_Pressed = false;
+          schedulerSetEventButtonReleased();
+      }
+  }
+}
+
+#endif
 
 

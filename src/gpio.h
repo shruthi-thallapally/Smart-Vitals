@@ -38,8 +38,8 @@
 #define LCD_port    (3) // Port D for LCD
 #define LCD_pin     (13) // Pin 13 of LCD in port D
 #define BUTTON_PORT (5) // User button is associated with port f(PF), whose value is 5 as per em_gpio.h enum declarations.
-#define BUTTON_PIN  (6) // Pin 6 for user button which is associated with port F
-
+#define PB0_PIN  (6) // Pin 6 for user button 0 which is associated with port F
+#define PB1_PIN  (7) // Pin 7 for user button 1 which is associated with port F
 
 // Function prototypes
 

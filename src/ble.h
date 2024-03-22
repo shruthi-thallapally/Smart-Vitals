@@ -58,11 +58,20 @@ typedef struct
   bool Button_Indication;
   bool Button_Pressed;
   bool Bonded;
+  bool PB1_Button_Pressed;
+  int Press_Seq;
   queue_struct_t Indication_Buffer[QUEUE_DEPTH];
   uint8_t r_ptr, w_ptr;
   bool full;
   uint8_t Queued_Indication;
   uint32_t passkey;
+  //button service handle
+  uint32_t Button_Service_Handle;
+  //button characteristic handle
+  uint16_t Button_Char_Handle;
+  //indication characteristic value from server
+  uint8_t * Button_Char_Value;
+
 } ble_data_struct_t;
 
 /*
