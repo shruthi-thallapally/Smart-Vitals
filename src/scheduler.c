@@ -217,7 +217,7 @@ void discovery_state_machine(sl_bt_msg_t *evt)
           ble_Data->Gatt_Procedure = true;
 
           // Move to the next state to handle service discovery
-          Next_State = State1_GOT_SERVICES;
+          Next_State = State0_GET_ANOTHER_SERVICE;
       }
       break;
     case State0_GET_ANOTHER_SERVICE:
@@ -241,7 +241,7 @@ void discovery_state_machine(sl_bt_msg_t *evt)
              //gatt command in process
              ble_Data->Gatt_Procedure = true;
 
-             Next_State = State0_GET_ANOTHER_SERVICE;
+             Next_State = State1_GOT_SERVICES;
          }
          break;
     case State1_GOT_SERVICES:
@@ -266,7 +266,7 @@ void discovery_state_machine(sl_bt_msg_t *evt)
           ble_Data->Gatt_Procedure = true;
 
           // Advance to the next state to handle characteristic discovery
-          Next_State = State2_GOT_CHAR;
+          Next_State = State1_GOT_ANOTHER_SERVICE;
       }
       break;
    //discover button state characteristics
@@ -302,8 +302,6 @@ void discovery_state_machine(sl_bt_msg_t *evt)
       // Move forward when the GATT procedure is completed
       if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id)
       {
-          // Indicate a GATT procedure is in progress
-          ble_Data->Gatt_Procedure = true;
 
           // Enable indications from the server for the discovered characteristic
           rc = sl_bt_gatt_set_characteristic_notification(ble_Data->Connection_Handle,
@@ -314,11 +312,10 @@ void discovery_state_machine(sl_bt_msg_t *evt)
           {
               LOG_ERROR("Error setting characteristic notification, status=0x%04x", (unsigned int)rc);
           }
-
-          // Update UI to reflect handling of indications
-          displayPrintf(DISPLAY_ROW_CONNECTION, "Handling indications");
+          //gatt command in process
+          ble_Data->Gatt_Procedure = true;
           // Transition to the state indicating server setup for indications
-          Next_State = State3_SET_INDICATION;
+          Next_State = State2_GOT_ANOTHER_CHAR;
       }
       break;
       //enble indications for button state service

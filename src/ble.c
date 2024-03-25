@@ -42,11 +42,11 @@ static const uint8_t thermometer_service[2] = { 0x09, 0x18 };
 // UUID for the Temperature Measurement characteristic as specified by the Bluetooth Special Interest Group (SIG)
 static const uint8_t thermometer_char[2] = { 0x1c, 0x2a };
 
-// button state service UUID defined by Bluetooth SIG
+//  UUID defined by Bluetooth SIG - Button State Service
 // 00000001-38c8-433e-87ec-652a2d136289
 static const uint8_t button_service[16] = { 0x89, 0x62, 0x13, 0x2d, 0x2a, 0x65, 0xec, 0x87, 0x3e, 0x43, 0xc8, 0x38, 0x01, 0x00, 0x00, 0x00 };
 
-// button state characteristic UUID defined by Bluetooth SIG
+//UUID defined by Bluetooth SIG - Button state characteristic
 // 00000002-38c8-433e-87ec-652a2d136289
 static const uint8_t button_char[16] = { 0x89, 0x62, 0x13, 0x2d, 0x2a, 0x65, 0xec, 0x87, 0x3e, 0x43, 0xc8, 0x38, 0x02, 0x00, 0x00, 0x00 };
 
@@ -91,7 +91,8 @@ uint32_t next_ptr(uint32_t ptr)
   {
     // If true, wrap the pointer to the beginning (set to 0)
     ptr=0;
-  }else
+  }
+  else
   {
     // If false, simply increment the pointer
   ptr=ptr+1;
@@ -124,7 +125,7 @@ int write_queue (queue_struct_t write_data)
     if ((ble_Data->w_ptr)==(ble_Data->r_ptr))
     {
       // If true, set 'full' flag to true to indicate the queue is full
-        ble_Data->full=true;
+        ble_Data->full=1;
     }
 
     // Return false to indicate a successful write operation
@@ -261,10 +262,11 @@ void SendTemp_ble()
       {
         // Mark indication as in flight
         ble_Data->Indication_InFlight = true;
-        LOG_INFO("Sent indication to get Temp=%d\n\r", temperature_in_celcius);
+        LOG_INFO("Sent indication to get Temperature=%d\n\r", temperature_in_celcius);
+        displayPrintf(DISPLAY_ROW_TEMPVALUE, "Temp=%d", temperature_in_celcius);
 
       }
-      displayPrintf(DISPLAY_ROW_TEMPVALUE, "Temp=%d", temperature_in_celcius);
+
    }
   }
  }
@@ -274,11 +276,11 @@ void SendButtonState_ble(uint8_t value)
 {
   // Get pointer to BLE data structure
   ble_data_struct_t *ble_Data=get_ble_DataPtr();
-
-  // Buffer to hold button status value
-  uint8_t button_value_buffer[2];
   // Structure to hold indication data
   queue_struct_t Indication_Data;
+  // Buffer to hold button status value
+  uint8_t button_value_buffer[2];
+
 
   // Set button status value in the buffer
   button_value_buffer[0]=value; // Assign the function's input value as the button state
@@ -540,8 +542,10 @@ void handle_ble_event(sl_bt_msg_t *evt)
         // If the device is a BLE server, stop advertising to save power and prevent further connections
         sc = sl_bt_advertiser_stop(ble_Data->Advertising_Set_Handle);
 
-        // If stopping the advertiser fails, log the error (uncomment the line below to enable logging)
-        // LOG_ERROR("sl_bt_advertiser_stop() failed with status=0x%04x\n\r", (unsigned int)sc);
+        if(sc != SL_STATUS_OK)
+        {
+                  LOG_ERROR("sl_bt_advertiser_stop() returned != 0 status=0x%04x\n\r", (unsigned int)sc);
+        }
 
         // After a connection is established, set the connection parameters such as intervals and timeouts
         sc = sl_bt_connection_set_parameters(ble_Data->Connection_Handle,
@@ -641,6 +645,66 @@ void handle_ble_event(sl_bt_msg_t *evt)
 
       break;
 
+      // Handle confirm bonding event
+      case sl_bt_evt_sm_confirm_bonding_id:
+
+          // Confirm bonding
+          sc = sl_bt_sm_bonding_confirm(ble_Data->Connection_Handle, 1);
+
+          // Log error if bonding confirmation fails
+          if (sc != SL_STATUS_OK)
+          {
+              LOG_ERROR("sl_bt_sm_bonding_confirm() returned != 0 status=0x%04x\n\r", (unsigned int)sc);
+          }
+
+      break;
+
+      // Handle confirm passkey event
+      case sl_bt_evt_sm_confirm_passkey_id:
+
+         // Save passkey from event data
+         ble_Data->passkey = evt->data.evt_sm_confirm_passkey.passkey;
+
+         // Display passkey on the appropriate display row
+         displayPrintf(DISPLAY_ROW_PASSKEY, "%d", ble_Data->passkey);
+
+         // Display instructions for passkey confirmation
+         displayPrintf(DISPLAY_ROW_ACTION, "Confirm with PB0");
+
+         break;
+
+
+         // Handle bonded event
+         case sl_bt_evt_sm_bonded_id:
+
+            // Display bonded status
+            displayPrintf(DISPLAY_ROW_CONNECTION, "Bonded");
+
+            // Set bonded flag to true
+            ble_Data->Bonded = true;
+
+            // Clear passkey and action display rows
+            displayPrintf(DISPLAY_ROW_PASSKEY, "");
+            displayPrintf(DISPLAY_ROW_ACTION, "");
+
+            break;
+
+
+            // Handle bonding failed event
+            case sl_bt_evt_sm_bonding_failed_id:
+
+               // Log bonding failure reason
+               LOG_ERROR("Bonding failed. Reason: 0x%04x\n\r", evt->data.evt_sm_bonding_failed.reason);
+
+               // Close the connection
+               sc = sl_bt_connection_close(ble_Data->Connection_Handle);
+
+                // Log error if connection close fails
+                if (sc != SL_STATUS_OK) {
+                    LOG_ERROR("Failed to close connection. Status: 0x%04x\n\r", (unsigned int)sc);
+                }
+
+                break;
      // Handle connection parameters event by using this function
     case sl_bt_evt_connection_parameters_id:
     // handle connection parameters event
@@ -654,29 +718,28 @@ void handle_ble_event(sl_bt_msg_t *evt)
    #endif
 
    break;
-
    // Handle external signal event
    case sl_bt_evt_system_external_signal_id:
 #if !DEVICE_IS_BLE_SERVER
      //detect button press sequence to change indication status for button state service
-          //check if PB0 is pressed once
-          if(evt->data.evt_system_external_signal.extsignals == evt_Button_Pressed && ble_Data->Button_Pressed)
-            ble_Data->Press_Seq = 1;
+     //check if PB0 is pressed once
+     if(evt->data.evt_system_external_signal.extsignals == evt_Button_Pressed && ble_Data->Button_Pressed)
+         ble_Data->Press_Seq = 1;
 
-          //check if PB1 is pressed while PB0 is pressed, if yes break from the loop
+          //check if PB1 is pressed while PB0 is pressed
           if((ble_Data->Press_Seq == 1) && ble_Data->PB1_Button_Pressed && evt->data.evt_system_external_signal.extsignals == evt_Button_Pressed)
           {
               ble_Data->Press_Seq = 2;
           }
 
-          //check if PB1 is released in sequence, if yes break from the loop
+          //check if PB1 is released in sequence
           if((ble_Data->Press_Seq == 2) && !ble_Data->PB1_Button_Pressed && evt->data.evt_system_external_signal.extsignals == evt_Button_Released)
           {
               ble_Data->Press_Seq = 3;
               break;
           }
 
-          //check if PB0 is released in sequence, if yes break from the loop after toggling indication status for button state
+          //Check if PB0 is released. If so, toggle the indication status to reflect the change, then break from the loop to prevent further actions until the next condition check.
           if((ble_Data->Press_Seq== 3) && !ble_Data->Button_Pressed && evt->data.evt_system_external_signal.extsignals == evt_Button_Released)
           {
               if(ble_Data->Button_Indication)
@@ -716,7 +779,7 @@ void handle_ble_event(sl_bt_msg_t *evt)
            // Display message indicating button is pressed
            displayPrintf(DISPLAY_ROW_9, "Button Pressed");
 
-           // If device is bonded, send button status
+           // send button status if device bonded
            if (ble_Data->Bonded)
            {
                SendButtonState_ble(0x01);
@@ -764,17 +827,32 @@ void handle_ble_event(sl_bt_msg_t *evt)
 #endif
 
       break;
+      // Handle system soft timer event
+      case sl_bt_evt_system_soft_timer_id:
+
+     // Update display
+     displayUpdate();
+#if DEVICE_IS_BLE_SERVER
+
+     // Check if there are queued indications and no indication is currently in flight
+     if (ble_Data->Queued_Indication != 0 && !ble_Data->Indication_InFlight)
+     {
+
+         // Read from the queue
+         qc = read_queue();
+
+         // Log error if indication dequeue fails
+         if (qc != 0)
+            {
+                  LOG_ERROR("Indication dequeue failed\n\r");
+            }
+
+     }
+#endif
+     break;
 
       // Handle GATT server events for BLE server
 #if DEVICE_IS_BLE_SERVER
-
-       // Handle GATT server indication timeout event
-       case sl_bt_evt_gatt_server_indication_timeout_id:
-           LOG_ERROR("server indication timeout\n\r");
-           // Reset indication flag
-           ble_Data->Indication = false; // Reset indication flag when indication timeout occurs
-           ble_Data->Button_Indication = false; // Reset button indication flag as well
-           break;
 
        // Handle GATT server characteristic status event
        case sl_bt_evt_gatt_server_characteristic_status_id:
@@ -825,6 +903,16 @@ void handle_ble_event(sl_bt_msg_t *evt)
            }
            break;
 
+
+           // Handle GATT server indication timeout event
+           case sl_bt_evt_gatt_server_indication_timeout_id:
+               LOG_ERROR("server indication timeout\n\r");
+               // Reset indication flag
+               ble_Data->Indication = false; // Reset indication flag when indication timeout occurs
+               ble_Data->Button_Indication = false; // Reset button indication flag as well
+               break;
+
+
 #else
            // Handle scanner scan report event
               case sl_bt_evt_scanner_scan_report_id:
@@ -838,47 +926,48 @@ void handle_ble_event(sl_bt_msg_t *evt)
                           (evt->data.evt_scanner_scan_report.address.addr[4] == server_address[4]) &&
                           (evt->data.evt_scanner_scan_report.address.addr[5] == server_address[5]) &&
                           (evt->data.evt_scanner_scan_report.address_type == 0)) {
-                          // Stop scanner
+
                           sc = sl_bt_scanner_stop();
                           if (sc != SL_STATUS_OK) {
-                              // Handle error if scanner stop fails
+
                               LOG_ERROR("sl_bt_scanner_stop() returned != 0 status=0x%04x\n\r", (unsigned int)sc);
                           }
-                          // Open connection to server
+
                           sl_bt_connection_open(evt->data.evt_scanner_scan_report.address,
                                                 evt->data.evt_scanner_scan_report.address_type, sl_bt_gap_1m_phy, NULL);
                           if (sc != SL_STATUS_OK) {
-                              // Handle error if connection open fails
+
                               LOG_ERROR("sl_bt_connection_open() returned != 0 status=0x%04x\n\r", (unsigned int)sc);
                           }
                       }
                   }
                   break;
 
-              // Handle GATT client events
+
+
               case sl_bt_evt_gatt_procedure_completed_id:
-                //error code checking when PB1 is pressed on client for first time
+
                 if(evt->data.evt_gatt_procedure_completed.result == 0x110F)
                 {
-                       //increase security(numeric comparison)
+
                        sc = sl_bt_sm_increase_security(ble_Data->Connection_Handle);
                        if(sc != SL_STATUS_OK) {
                            LOG_ERROR("sl_bt_sm_increase_security() returned != 0 status=0x%04x\n\r", (unsigned int)sc);
                        }
                 }
 
-                //toggle indication state if required button press sequence detected
+
                 if(ble_Data->Press_Seq == 3)
                 {
                     ble_Data->Press_Seq = 0;
                     ble_Data->Button_Indication = !ble_Data->Button_Indication;
                 }
-                 // Reset GATT procedure flag
+
                  ble_Data->Gatt_Procedure = false;
                  break;
 
               case sl_bt_evt_gatt_service_id:
-                  // Store service handle
+
                 if(memcmp(evt->data.evt_gatt_service.uuid.data, thermometer_service, sizeof(thermometer_service)) == 0)
                        ble_Data->Service_Handle = evt->data.evt_gatt_service.service;
                 else if(memcmp(evt->data.evt_gatt_service.uuid.data, button_service, sizeof(button_service)) == 0)
@@ -886,7 +975,7 @@ void handle_ble_event(sl_bt_msg_t *evt)
                   break;
 
               case sl_bt_evt_gatt_characteristic_id:
-                  // Store characteristic handle
+
                 if(memcmp(evt->data.evt_gatt_characteristic.uuid.data, thermometer_char, sizeof(thermometer_char)) == 0)
                        ble_Data->Char_Handle = evt->data.evt_gatt_characteristic.characteristic;
                 else if(memcmp(evt->data.evt_gatt_characteristic.uuid.data, button_char, sizeof(button_char)) == 0)
@@ -895,25 +984,36 @@ void handle_ble_event(sl_bt_msg_t *evt)
                 break;
 
               case sl_bt_evt_gatt_characteristic_value_id:
-                  // Send characteristic confirmation
+
                   if(evt->data.evt_gatt_characteristic_value.att_opcode == sl_bt_gatt_handle_value_indication)
                   {
                   sc = sl_bt_gatt_send_characteristic_confirmation(ble_Data->Connection_Handle);
                   if (sc != SL_STATUS_OK) {
-                      // Handle error if sending confirmation fails
+                      LOG_ERROR("sl_bt_gatt_set_characteristic_notification() returned != 0 status=0x%04x\n\r", (unsigned int)sc);
                   }
                   }
 
                   if(evt->data.evt_gatt_characteristic_value.characteristic == ble_Data->Char_Handle)
                   {
-                  // Store characteristic value
+
                   ble_Data->Char_Value = &(evt->data.evt_gatt_characteristic_value.value.data[0]);
-                  // Convert temperature value and display it
+
                   temperature_in_celsius = FLOAT_TO_INT32((ble_Data->Char_Value));
                   displayPrintf(DISPLAY_ROW_TEMPVALUE, "Temp=%d", temperature_in_celsius);
                   }
 
-                  //check if we got a read response, if yes show button on lcd
+                  if(ble_Data->Bonded && ble_Data->Button_Indication && (evt->data.evt_gatt_characteristic_value.characteristic == ble_Data->Button_Char_Handle))
+                  {
+                       if(evt->data.evt_gatt_characteristic_value.value.data[0] == 0x01)
+                       {
+                           displayPrintf(DISPLAY_ROW_9, "Button Pressed");
+                       }
+                       else if(evt->data.evt_gatt_characteristic_value.value.data[0] == 0x00)
+                       {
+                            displayPrintf(DISPLAY_ROW_9, "Button Released");
+                       }
+                  }
+
                   if(evt->data.evt_gatt_characteristic_value.att_opcode == sl_bt_gatt_read_response)
                   {
                        if(evt->data.evt_gatt_characteristic_value.value.data[0] == 0x01)
@@ -926,106 +1026,9 @@ void handle_ble_event(sl_bt_msg_t *evt)
                        }
                  }
 
-                 //display button state on client
-                 if(ble_Data->Bonded && ble_Data->Button_Indication && (evt->data.evt_gatt_characteristic_value.characteristic == ble_Data->Button_Char_Handle))
-                 {
-                      if(evt->data.evt_gatt_characteristic_value.value.data[0] == 0x01)
-                      {
-                          displayPrintf(DISPLAY_ROW_9, "Button Pressed");
-                      }
-                      else if(evt->data.evt_gatt_characteristic_value.value.data[0] == 0x00)
-                      {
-                           displayPrintf(DISPLAY_ROW_9, "Button Released");
-                      }
-                 }
+
                  break;
      #endif
-
-        // Handle system soft timer event
-        case sl_bt_evt_system_soft_timer_id:
-
-        // Update display
-        displayUpdate();
-#if DEVICE_IS_BLE_SERVER
-
-        // Check if there are queued indications and no indication is currently in flight
-        if (ble_Data->Queued_Indication != 0 && !ble_Data->Indication_InFlight)
-        {
-
-           // Read from the queue
-           qc = read_queue();
-
-           // Log error if indication dequeue fails
-           if (qc != 0)
-             {
-                  LOG_ERROR("Indication dequeue failed\n\r");
-             }
-
-        }
-#endif
-        break;
-
-        // Handle confirm bonding event
-        case sl_bt_evt_sm_confirm_bonding_id:
-
-            // Confirm bonding
-            sc = sl_bt_sm_bonding_confirm(ble_Data->Connection_Handle, 1);
-
-            // Log error if bonding confirmation fails
-            if (sc != SL_STATUS_OK)
-            {
-                LOG_ERROR("sl_bt_sm_bonding_confirm() returned != 0 status=0x%04x\n\r", (unsigned int)sc);
-            }
-
-        break;
-
-
-        // Handle confirm passkey event
-        case sl_bt_evt_sm_confirm_passkey_id:
-
-            // Save passkey from event data
-            ble_Data->passkey = evt->data.evt_sm_confirm_passkey.passkey;
-
-            // Display passkey on the appropriate display row
-            displayPrintf(DISPLAY_ROW_PASSKEY, "%d", ble_Data->passkey);
-
-            // Display instructions for passkey confirmation
-            displayPrintf(DISPLAY_ROW_ACTION, "Confirm with PB0");
-
-        break;
-
-
-        // Handle bonded event
-        case sl_bt_evt_sm_bonded_id:
-
-            // Display bonded status
-            displayPrintf(DISPLAY_ROW_CONNECTION, "Device bonded");
-
-            // Set bonded flag to true
-            ble_Data->Bonded = true;
-
-            // Clear passkey and action display rows
-            displayPrintf(DISPLAY_ROW_PASSKEY, "");
-            displayPrintf(DISPLAY_ROW_ACTION, "");
-
-            break;
-
-
-            // Handle bonding failed event
-            case sl_bt_evt_sm_bonding_failed_id:
-
-                // Log bonding failure reason
-                LOG_ERROR("Bonding failed. Reason: 0x%04x\n\r", evt->data.evt_sm_bonding_failed.reason);
-
-                // Close the connection
-                sc = sl_bt_connection_close(ble_Data->Connection_Handle);
-
-                // Log error if connection close fails
-                if (sc != SL_STATUS_OK) {
-                    LOG_ERROR("Failed to close connection. Status: 0x%04x\n\r", (unsigned int)sc);
-                }
-
-                break;
 
   }
 }
