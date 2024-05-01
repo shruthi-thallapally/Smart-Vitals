@@ -1,38 +1,34 @@
 /*
  * oscillators.h
  *
- *  Created on: Jan 31, 2024
- *      Author: tharu
+ *  Created on: 31-Jan-2024
+ *      Author: Shruthi Thallapally
+ * Description: Header file for oscillator initialization functions
  */
 
 #ifndef SRC_OSCILLATORS_H_
 #define SRC_OSCILLATORS_H_
 
-#include "em_cmu.h"
+#define LFXO_FREQ 32768
+#define ULFRCO_FREQ 1000
+#define PRESCALER 2
+#define LFXO_FREQ_USED (LFXO_FREQ/PRESCALER)
+#define ULFRCO_FREQ_USED (ULFRCO_FREQ/1)
+#define ACTUAL_FREQ (LOWEST_ENERGY_MODE==3?ULFRCO_FREQ_USED:LFXO_FREQ_USED)
 
-/**
- * @brief Returns the required frequency for the selected oscillator based on the LOWEST_ENERGY_MODE.
+/*
+ * Function: init_oscillator
+ * -------------------------
+ * Initializes the oscillator settings based on the lowest energy mode.
+ * Configures the Low-Frequency Crystal Oscillator (LFXO) or Ultra-Low Frequency
+ * RC Oscillator (ULFRCO) and sets the clock source for Low Energy Timer (LETIMER0).
  *
- * This function calculates and returns the required frequency for the oscillator based on the
- * specified LOWEST_ENERGY_MODE. It supports two oscillator options: Ultra Low-Frequency RC Oscillator (ULFRCO)
- * for energy mode 3, and Low-Frequency Crystal Oscillator (LFXO) for other energy modes.
+ * Parameters:
+ *    None
  *
- * @return The calculated frequency for the selected oscillator based on the LOWEST_ENERGY_MODE.
- */
-int required_oscillator();
-
-/**
- * @brief Initializes the oscillator based on the specified energy mode.
- *
- * This function configures the oscillator settings, clock source, and clock division
- * for the Low-Frequency A Clock (LFA) and the Low Energy Timer 0 (LETIMER0) based on
- * the specified energy mode (LOWEST_ENERGY_MODE).
- *
- * @note Ensure that appropriate energy mode configuration is set before calling this function.
- * @note This function supports two oscillator options: Ultra Low-Frequency RC Oscillator (ULFRCO)
- *       for energy mode 3, and Low-Frequency Crystal Oscillator (LFXO) for other energy modes.
+ * Returns:
+ *    None
  */
 void init_oscillator();
-
 
 #endif /* SRC_OSCILLATORS_H_ */

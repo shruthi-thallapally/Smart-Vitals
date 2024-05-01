@@ -50,7 +50,7 @@
 
 /*
  * Student edit: Add your name and email address here:
- * @student    Awesome Student, Awesome.Student@Colorado.edu
+ * @student    Shruthi Thallapally, Shruthi.Thallapally@Colorado.edu
 */
 
 
@@ -260,7 +260,7 @@ void displayInit()
     //gpioSensorEnSetOn(); // we need SENSOR_ENABLE=1 which is tied to DISP_ENABLE
     //                     // for the LCD, on all the time now
 
-    sensor_enable();
+    gpioTempSensorEnable();
 
     // Init the dot matrix display data structure
     display->dmdInitConfig = 0;
@@ -316,11 +316,10 @@ void displayInit()
     //           set up a 1 second repeating soft timer and uncomment the following lines
 
 	  sl_status_t          timer_response;
-	  timer_response = sl_bt_system_set_soft_timer(32768, 2, 0);
-	  if (timer_response != SL_STATUS_OK)
-	  {
-	       LOG_ERROR("Failure in soft timer");
-    }
+	  timer_response = sl_bt_system_set_soft_timer(32768,2,0);
+	  if (timer_response != SL_STATUS_OK) {
+	      LOG_ERROR("Error in soft timer\n\r");
+     }
 
 
 

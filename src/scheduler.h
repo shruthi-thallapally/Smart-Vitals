@@ -1,141 +1,149 @@
 /*
- * schedulers.h
+ * scheduler.h
  *
- *  Created on: Feb 3, 2024
- *      Author: Tharuni Gelli
+ *  Created on: 08-Feb-2024
+ *      Author: Shruthi Thallapally
+ *   Reference: Code reference taken from the lecture slides
  */
 
 #ifndef SRC_SCHEDULER_H_
 #define SRC_SCHEDULER_H_
 
-#include "em_letimer.h"
+#include "sl_bt_api.h"
 
-#include "app.h"
-#include "src/timers.h"
-#include "src/oscillators.h"
-#include "src/gpio.h"
 
-// Define an enumeration representing various events.
+
+
+/**
+ * @brief Enumeration of scheduler events.
+ */
 enum
 {
-    // Define an event flag indicating no event.
-    evt_no_event = 0,
-
-    // Define an event flag indicating an underflow event from LETIMER0.
-    evt_LETIMER0_UF,
-
-    // Define an event indicating value reach for COMP1.
-    evt_COMP1,
-
-    // Define an event indicating transfer done for i2c.
-    evt_Transfer_Done,
-
-    // Define an event indicating button 0 pressed
-    evt_Button_Pressed,
-
-    // Define an event indicating button 0 released
-    evt_Button_Released,
+  no_event     = 0             ,     /**< No event */
+  LETIMER0_UF              ,     /**< LETIMER0 underflow event */
+  LETIMER0_COMP1           ,
+  I2C_COMPLETE             ,
+  Evt_Button_Pressed       ,
+  Evt_Button_Released      ,
+  Evt_GestureInt           ,
 };
 
-
 /**
- * @brief Manages the state machine for temperature monitoring.
- *
- * This function controls the state machine dedicated to monitoring and managing temperature-related events
- * in a system, especially useful in contexts where temperature readings from sensors are critical, such as in
- * environmental monitoring systems or device thermal management. It processes events that indicate temperature changes,
- * threshold crossings, or sensor status updates. Based on these events, it can trigger alerts, activate cooling mechanisms,
- * or adjust operational parameters to maintain optimal temperature conditions.
- *
- * @param evt Pointer to the event message structure received from the BLE stack or a sensor controller. This structure
- * contains detailed information about the temperature event that occurred, facilitating appropriate responses or
- * adjustments in the system's behavior or state.
- *
- * @return void
+ * @brief States of the state machine
  */
-void temperature_state_machine(sl_bt_msg_t *evt);
+typedef enum {
+
+  //states for temperature state machine
+    StateA_Sleep,      /**< State A: Sleep */        ///< StateA_Sleep
+    StateB_Wait,       /**< State B: Wait */         ///< StateB_Wait
+    StateC_WriteCmd,   /**< State C: Write Command *////< StateC_WriteCmd
+    StateD_WriteWait,  /**< State D: Write Wait */   ///< StateD_WriteWait
+    StateE_Read,        /**< State E: Read */         ///< StateE_Read
+
+    //states for discovery state machine
+    State0_client_idle,   // Initial state
+    State0_get_button_service,      // Discovering services
+    State0_get_gesture_service,
+    State0_get_oximeter_service,
+    State1_get_temp_char,
+    State1_get_button_char,
+    State1_get_gesture_char,
+    State1_get_oximeter_char,
+    State2_set_temp_ind,
+    State2_set_button_ind,
+    State2_set_gesture_ind,
+    State2_set_oximeter_ind,
+    State3_all_set,
+    State4_wait_for_close,
+
+    State0_Gesture_Wait,
+    State1_Gesture,
+
+    State_No_Gesture,
+
+    //for oximeter state machine
+    state_pulse_sensor_init,
+    state_wait_10ms,
+    state_wait_1s,
+    state_read_return_check,
+    state_set_output_mode,
+    state_setFifoThreshold,
+    state_agcAlgoControl,
+    state_max30101Control,
+    state_maximFastAlgoControl,
+    state_readAlgoSamples,
+    state_wait_before_reading,
+    state_read_sensor_hub_status,
+    state_numSamplesOutFifo,
+    state_read_fill_array,
+    state_disable_AFE,
+    state_disable_algo,
+    state_pulse_done,
+}state;
+
+
 
 /**
- * @brief Sets an event flag for underflow event from LETIMER0.
- *
- * This function sets an event flag in the global variable my_event to indicate
- * an underflow event from LETIMER0 has occurred.
+ * @brief Sets a scheduler event when LETIMER0 underflow interrupt occurs.
  */
 void schedulerSetEventUF();
 
 /**
- * @brief Sets an event related to COMP1 for scheduling.
- *
- * This function sets an event related to the COMP1 peripheral for scheduling.
- * The event is used by the scheduler to trigger actions or state transitions
- * in the system.
- *
- * @return void
+ * @brief Retrieves the next event from the global variable my_event.
+ *        This function handles LETIMER0 underflow, LETIMER0 COMP1, and I2C_COMPLETE events.
+ * @return The next event retrieved from the global variable.
+ */
+uint32_t getNextEvent();
+
+/**
+ * @brief Sets a scheduler event when I2C transfer completes.
+ */
+void schedulerSetEventI2Ccomplete();
+
+/**
+ * @brief Sets a scheduler event when LETIMER0 COMP1 interrupt occurs.
  */
 void schedulerSetEventCOMP1();
 
 /**
- * @brief Sets an event indicating the completion of a transfer.
+ * @brief Sets the event indicating a button press in the scheduler.
  *
- * This function sets an event indicating the completion of a data transfer.
- * The event is typically used in systems where asynchronous data transfer
- * operations are performed, such as I2C or SPI communication. The event
- * is useful for triggering actions or state transitions in the system.
- *
- * @return void
- */
-void schedulerSetEventTransferDone();
-
-/**
- * @brief Sets an event indicating the completion of a transfer.
- *
- * This function sets an event indicating the completion of a data transfer.
- * The event is typically used in systems where asynchronous data transfer
- * operations are performed, such as I2C or SPI communication. The event
- * is useful for triggering actions or state transitions in the system.
- *
- * @return void
+ * This function sets the event indicating that a button press has occurred in the scheduler.
+ * It disables interrupts before setting the event to ensure atomicity of the operation.
+ * After setting the event, interrupts are re-enabled.
  */
 void schedulerSetEventButtonPressed();
 
-
 /**
- * @brief Sets an event indicating that a button has been released.
+ * @brief Sets the event indicating a button release in the scheduler.
  *
- * This function sets an event indicating that a button has been released after being pressed.
- * It is commonly used in embedded systems for handling user input or in applications where
- * the physical interaction needs to be monitored. This event can trigger specific actions or
- * state changes in the system, such as stopping a process that was initiated by the button press.
- *
- * @return void
+ * This function sets the event indicating that a button release has occurred in the scheduler.
+ * It disables interrupts before setting the event to ensure atomicity of the operation.
+ * After setting the event, interrupts are re-enabled.
  */
 void schedulerSetEventButtonReleased();
 
+void schedulerSetGestureEvent();
+
 /**
- * @brief Retrieves and clears the next event flag.
- *
- * This function retrieves the next event flag from the global variable my_event,
- * clears the flag, and returns the retrieved event.
- *
- * @return The retrieved event flag.
+ * @brief State machine to control the temperature sensor
+ * @param event The event triggered by interrupts
  */
-uint32_t getNextEvent();
+void temp_state_machine(sl_bt_msg_t *evt);
 
 
+void handle_gesture();
+
+void gesture_state_machine(sl_bt_msg_t *evt);
+
+void oximeter_state_machine(sl_bt_msg_t *evt);
 /**
- * @brief Manages the state machine for device discovery.
+ * @brief Handles the state machine for BLE discovery.
  *
- * This function oversees the state transitions and actions of the discovery state machine,
- * which is typically involved in scanning for and connecting to Bluetooth Low Energy (BLE) devices.
- * It handles events related to discovery, such as the detection of advertising packets or the completion
- * of a connection process. The state machine can be used to automate the process of finding and
- * establishing connections with BLE devices in a controlled and efficient manner.
+ * This function implements a state machine to handle BLE discovery process.
+ * It transitions between different states based on events received.
  *
- * @param evt Pointer to the event message structure received from the BLE stack. This structure
- * contains information about the event that occurred, which is used to determine the next action
- * in the state machine.
- *
- * @return void
+ * @param evt Pointer to the BLE event message structure.
  */
 void discovery_state_machine(sl_bt_msg_t *evt);
 

@@ -160,4 +160,48 @@ When used with the Measurement Interval characteristic, the Valid Range descript
       </descriptor>
     </characteristic>
   </service>
+
+  <!--ECEN5823 Gesture Sensor-->
+  <service advertise="true" name="ECEN5823 Gesture Sensor" requirement="mandatory" sourceId="" type="primary" uuid="855eb9c5-82e1-4f81-961f-9bce01d3547d">
+
+    <!--ECEN5823 Gesture Sensor State-->
+    <characteristic const="false" id="gesture_state" name="ECEN5823 Gesture Sensor State" sourceId="" uuid="c07a50a6-0642-49f0-839d-2933b25c414b">
+      <value length="1" type="hex" variable_length="false">00</value>
+      <properties>
+        <read authenticated="false" bonded="true" encrypted="false"/>
+        <indicate authenticated="false" bonded="false" encrypted="false"/>
+      </properties>
+
+      <!--Client Characteristic Configuration-->
+      <descriptor const="false" discoverable="true" id="client_characteristic_configuration_6" name="Client Characteristic Configuration" sourceId="org.bluetooth.descriptor.gatt.client_characteristic_configuration" uuid="2902">
+        <properties>
+          <read authenticated="false" bonded="false" encrypted="false"/>
+          <write authenticated="false" bonded="false" encrypted="false"/>
+        </properties>
+        <value length="2" type="hex" variable_length="false">00</value>
+      </descriptor>
+    </characteristic>
+  </service>
+
+  <!--ECEN5823 Pulse Oximeter-->
+  <service advertise="true" name="ECEN5823 Pulse Oximeter" requirement="mandatory" sourceId="" type="primary" uuid="cd7f3d54-989e-48a4-b742-5f5dbdd2a316">
+
+    <!--ECEN5823 Pulse Oximeter State-->
+    <characteristic const="false" id="oximeter_state" name="ECEN5823 Pulse Oximeter State" sourceId="" uuid="202ce269-3f62-485b-a283-f48088e72f39">
+      <value length="8" type="hex" variable_length="false">00</value>
+      <properties>
+        <read authenticated="false" bonded="true" encrypted="false"/>
+        <indicate authenticated="false" bonded="false" encrypted="false"/>
+      </properties>
+
+      <!--Client Characteristic Configuration-->
+      <descriptor const="false" discoverable="true" id="client_characteristic_configuration_7" name="Client Characteristic Configuration" sourceId="org.bluetooth.descriptor.gatt.client_characteristic_configuration" uuid="2902">
+        <properties>
+          <read authenticated="false" bonded="false" encrypted="false"/>
+          <write authenticated="false" bonded="false" encrypted="false"/>
+        </properties>
+        <value length="2" type="hex" variable_length="false">00</value>
+      </descriptor>
+    </characteristic>
+  </service>
 </gatt>

@@ -17,7 +17,7 @@
 
 /*
  * Student edit: Add your name and email address here:
- * @student    Tharuni Gelli, Tharuni.Gelli@Colorado.edu
+ * @student    Shruthi Thallapally, Shruthi.Thallapally@Colorado.edu
 */
 
 
@@ -44,7 +44,7 @@ uint32_t loggerGetTimestamp()
      //           Put the letimerMilliseconds() function in your irq.c/.h files.
 
      return letimerMilliseconds();
-	   //return (0);
+//	   return (0);
 	   
 } // loggerGetTimestamp
 

@@ -33,7 +33,7 @@
  *
  *
  * Student edit: Add your name and email address here:
- * @student    Tharuni Gelli, tharuni.gelli@Colorado.edu
+ * @student    Shruthi Thallapally, Shruthi.Thallapally@Colorado.edu
  *
  *
  ******************************************************************************/
@@ -48,34 +48,15 @@
 #ifndef APP_H
 #define APP_H
 
-#include "em_common.h"
-#include "app_assert.h" // got messages that sl_app_assert() is deprecated and should switch to all_assert()
+#include "src/SparkFun_APDS9960.h"
 
-#include "sl_bluetooth.h"
-#include "gatt_db.h"
-
-#include "sl_status.h" // for sl_status_print()
-#include "sl_bt_api.h"
-
-#include "src/ble_device_type.h"
-
-#include "src/gpio.h"
-#include "src/lcd.h"
-#include "src/oscillators.h"
-#include "src/timers.h"
-#include "src/irq.h"
-#include "src/scheduler.h"
-#include "src/i2c.h"
-#include "em_letimer.h"
-#include "src/ble.h"
-
-
-// #define's to control the energy mode selection between EM0,EM1,EM2 & EM3
+// Only define 1 of these to define the lowest energy mode
+// 0 = highest energy mode, 3 = lowest energy mode
 //#define LOWEST_ENERGY_MODE 0
+//#define EM0
 //#define LOWEST_ENERGY_MODE 1
 #define LOWEST_ENERGY_MODE 2
 //#define LOWEST_ENERGY_MODE 3
-
 /**************************************************************************//**
  * Application Init.
  *****************************************************************************/

@@ -1,59 +1,53 @@
 /*
  * i2c.h
  *
- *  Created on: Feb 7, 2024
- *      Author: Tharuni Gelli
+ *  Created on: 08-Feb-2024
+ *      Author: Shruthi Thallapally
  */
 
 #ifndef SRC_I2C_H_
 #define SRC_I2C_H_
 
-#include "sl_i2cspm.h"
-#include "em_i2c.h"
-#include "em_letimer.h"
-#include "em_gpio.h"
-
-#include "app.h"
-#include "src/gpio.h"
-#include "src/timers.h"
-#include "src/oscillators.h"
+#include "stdint.h"
+/**
+ * @brief Reads temperature from the sensor via I2C and logs the value.
+ */
+//void Read_temp();
 
 /**
- * @brief Initializes the I2C communication.
- *
- * This function initializes the I2C communication by configuring write and read sequences,
- * setting up the I2C address, flags, and data buffers, and then initializing the I2C module
- * with the specified configuration.
+ * @brief Initializes the I2C peripheral and sets up write and read sequences.
  */
 void Init_i2c();
 
+/**
+ * @brief Performs an I2C read operation.
+ */
+void i2c_Read();
 
 /**
- * @brief Writes data over I2C communication.
- *
- * This function initiates a write operation over the I2C bus using the configured write sequence.
- * It checks the status of the write operation and logs an error if the transfer fails.
+ * @brief Performs an I2C write operation.
  */
-void Write_i2c();
+void i2c_Write();
 
+uint32_t writeAdd_writeData(uint8_t reg,uint8_t data);
+
+uint32_t writeAdd_readData(uint8_t reg,uint8_t *data);
+
+int read_block_data(uint8_t reg,uint8_t *data,uint8_t len);
+void check_read_return();
+void I2C_write_polled_pulse(uint8_t* cmd,int arr_length);
+void I2C_read_polled_pulse();
+
+//uint32_t writeAdd_readData_MAX(uint8_t reg,uint8_t *data);
+
+//uint32_t writeAdd_writeData_MAX(uint8_t reg,uint8_t data);
+
+int pulse_data_extract();
 
 /**
- * @brief Reads data over I2C communication.
- *
- * This function initiates a read operation over the I2C bus using the configured read sequence.
- * It checks the status of the read operation and logs an error if the transfer fails.
+ * @brief Converts raw temperature data to Celsius.
+ * @return Temperature in Celsius.
  */
-void Read_i2c();
-
-/**
- * @brief Converts the temperature value read from the sensor to Celsius.
- *
- * This function takes the raw temperature value read from the sensor, performs
- * necessary calculations, and returns the temperature in Celsius.
- *
- * @return The temperature value in Celsius.
- */
-int32_t ConvertValueToCelcius();
-
+int32_t ConvertTempToCelcius();
 
 #endif /* SRC_I2C_H_ */

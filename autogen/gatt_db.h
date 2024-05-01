@@ -21,7 +21,9 @@ extern const sli_bt_gattdb_t gattdb;
 #define gattdb_measurement_interval           29
 #define gattdb_valid_range                    30
 #define gattdb_button_state                   33
-#define gattdb_ota_control                    37
+#define gattdb_gesture_state                  37
+#define gattdb_oximeter_state                 41
+#define gattdb_ota_control                    45
 
 
 #endif // __GATT_DB_H

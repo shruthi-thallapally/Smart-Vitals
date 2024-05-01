@@ -12,7 +12,7 @@
 
  *
  * Student edit: Add your name and email address here:
- * @student    Tharuni Gelli, tharuni.gelli@Colorado.edu
+ * @student    Shruthi Thallapally, Shruthi.Thallapally@Colorado.edu
  *
  
  */
@@ -29,43 +29,31 @@
 #ifndef SRC_GPIO_H_
 #define SRC_GPIO_H_
 
+#include "stdbool.h"
 
-#define LED_port    (5) // UIF_LED's are associated with port f(PF), whose value is 5 as per em_gpio.h enum declarations.
-#define LED0_pin    (4) // Pin 4 of PF is connected to on-board UIF LED0
-#define LED1_pin    (5) // Pin 5 of PF is connected to on-board UIF LED1
-#define SENSOR_port (3) // UIF_LED's are associated with port f(PD), whose value is 3 as per em_gpio.h enum declarations.
-#define SENSOR_pin  (15)// Pin 15 of PD is connected to sensor
-#define LCD_port    (3) // Port D for LCD
-#define LCD_pin     (13) // Pin 13 of LCD in port D
-#define BUTTON_PORT (5) // User button is associated with port f(PF), whose value is 5 as per em_gpio.h enum declarations.
-#define PB0_PIN  (6) // Pin 6 for user button 0 which is associated with port F
-#define PB1_PIN  (7) // Pin 7 for user button 1 which is associated with port F
+#define LED_port   (gpioPortF) //port 5
+#define LED0_pin   (4)
+#define LED1_pin   (5)
+#define TEMP_SENSOR_PORT gpioPortD  //port 3
+#define TEMP_SENSOR_PIN (15)
+#define LCD_port    gpioPortD   //port 3
+#define LCD_pin     (13)
+#define BUTTON_PORT  (5)
+#define PB0_BUTTON_PIN  (6)
+#define PB1_BUTTON_PIN  (7)
+#define GESTURE_PORT gpioPortD
+#define GESTURE_PIN (11)
+
 
 // Function prototypes
-
-// Function to initialize GPIO ports and pin as per required config
 void gpioInit();
-
-// Function to turn on LED0
 void gpioLed0SetOn();
-
-// Function to turn off LED0
 void gpioLed0SetOff();
-
-// Function to turn on LED1
 void gpioLed1SetOn();
-
-// Function to turn off LED0
 void gpioLed1SetOff();
-
-//Function to enable sensor
-void sensor_enable();
-
-//Function to disable sensor
-void sensor_disable();
-
-// Function for display (EXTCOMIN) signal
-void gpioSetDisplayExtcomin(bool data );
+void gpioTempSensorEnable();
+void gpioTempSensorDisable();
+void gpioSetDisplayExtcomin(bool value);
 
 
 #endif /* SRC_GPIO_H_ */
