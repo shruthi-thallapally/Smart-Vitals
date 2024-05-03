@@ -37,9 +37,9 @@ uint8_t data_read[2]; ///< Array to store data read via I2C (2 bytes)
 
 uint8_t pulse_data[8];
 uint16_t heart_rate[10]; // LSB = 0.1bpm
-
 uint16_t o2[10]; // 0-100% LSB = 1%
 uint8_t  confidence; // 0-100% LSB = 1%
+
 //Status values
 // 0: Success,
 //1: Not Ready,
@@ -219,67 +219,6 @@ int read_block_data(uint8_t reg,uint8_t *data,uint8_t len)
 
 }
 
-/*
-uint32_t writeAdd_readData_MAX(uint8_t reg,uint8_t *data)
-{
-  uint8_t command_data[1];
-  I2C_TransferReturn_TypeDef transferStatus;
-  Init_i2c();
-
-  command_data[0]=reg;
-
-  transfer_sequence.addr=MAX30101_DEVICE_ADD<<1;
-  transfer_sequence.flags = I2C_FLAG_WRITE_READ;
-  transfer_sequence.buf[0].data = command_data;
-  transfer_sequence.buf[0].len = 1;
-  transfer_sequence.buf[1].data = data;
-  transfer_sequence.buf[1].len = 1;
-
-  //initialize I2C transfer
-  transferStatus = I2CSPM_Transfer(I2C0, &transfer_sequence);
-
-  //check transfer function return status
-  if(transferStatus != i2cTransferDone)
-    {
-     LOG_ERROR("I2CSPM_Transfer status %d writeAdd_readData_Max: failed\n\r", (uint32_t)transferStatus);
-     return (uint32_t)transferStatus;
-    }
-
- return (uint32_t)1;
-}
-
-uint32_t writeAdd_writeData_MAX(uint8_t reg,uint8_t data)
-{
-  uint8_t command_data[2];
-  uint8_t  no_add_data[1];
-  I2C_TransferReturn_TypeDef transferStatus;
-  Init_i2c();
-
-  command_data[0]=reg;
-  command_data[1]=data;
-
-  transfer_sequence.addr=MAX30101_DEVICE_ADD<<1;
-  transfer_sequence.flags = I2C_FLAG_WRITE;
-  transfer_sequence.buf[0].data = command_data;
-  transfer_sequence.buf[0].len = 2;
-  transfer_sequence.buf[1].data = no_add_data;
-  transfer_sequence.buf[1].len = 0;
-
-  //initialize I2C transfer
-   transferStatus = I2CSPM_Transfer(I2C0, &transfer_sequence);
-
-  //check transfer function return status
-  if(transferStatus != i2cTransferDone)
-    {
-     LOG_ERROR("I2CSPM_Transfer status %d writeAdd_writeData_MAX: failed\n\r", (uint32_t)transferStatus);
-     return (uint32_t)transferStatus;
-    }
-
- return (uint32_t)1;
-}
-*/
-
-
 void I2C_read_polled_pulse()
 {
   I2C_TransferReturn_TypeDef transferStatus;
@@ -326,7 +265,7 @@ void I2C_write_polled_pulse(uint8_t* cmd,int arr_length)
 void check_read_return()
 {
   if(pulse_data[0] == 0x00){
-      LOG_INFO("Return value check successfull\n\r");
+     // LOG_INFO("Return value check successfull\n\r");
   }
   else{
      LOG_ERROR("MAX30101 Pulse oximeter sensor not initialized!!\n\r");
@@ -364,7 +303,7 @@ int pulse_data_extract()
      }
    else
      {
-       LOG_INFO("Please place the finger correctly!!\n\n\r");
+    //   LOG_INFO("Please place the finger correctly!!\n\n\r");
 
        displayPrintf(DISPLAY_ROW_ACTION,"Place finger!");
    }

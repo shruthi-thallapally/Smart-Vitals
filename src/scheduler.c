@@ -29,26 +29,6 @@
 #include "src/pulse_oximeter.h"
 
 
-#if !DEVICE_IS_BLE_SERVER
-
-static const uint8_t thermo_service[2]={0x09,0x18};
-
-static const uint8_t thermo_char[2]={0x1c,0x2a};
-
-static const uint8_t button_service[16]={0x89,0x62,0x13,0x2d,0x2a,0x65,0xec,0x87,0x3e,0x43,0xc8,0x38,0x01,0x00,0x00,0x00};
-
-static const uint8_t button_charac[16] = { 0x89, 0x62, 0x13, 0x2d, 0x2a, 0x65, 0xec, 0x87, 0x3e, 0x43, 0xc8, 0x38, 0x02, 0x00, 0x00, 0x00 };
-
-//service uuid - gesture sensor
-//855eb9c5-82e1-4f81-961f-9bce01d3547d
-static const uint8_t gesture_service[16] = { 0x7d, 0x54, 0xd3, 0x01, 0xce, 0x9b, 0x1f, 0x96, 0x81, 0x4f, 0xe1, 0x82, 0xc5, 0xb9, 0x5e, 0x85 };
-
-//characteristic uuid - gesture sensor
-//c07a50a6-0642-49f0-839d-2933b25c414b
-static const uint8_t gesture_char[16] = { 0x4b, 0x41, 0x5c, 0xb2, 0x33, 0x29, 0x9d, 0x83, 0xf0, 0x49, 0x42, 0x06, 0xa6, 0x50, 0x7a, 0xc0 };
-
-#endif
-
 int Count_PulseData=0;
 
 uint8_t Mode_ReadDevice[2] = {0x02, 0x00};  //send this command to begin the communication with pulse oximeter
@@ -181,7 +161,7 @@ void oximeter_state_machine(sl_bt_msg_t *evt) {
     switch(currentState) {
 
             case state_pulse_sensor_init:
-              LOG_INFO("In state_pulse_sensor_init\n\r");
+             // LOG_INFO("In state_pulse_sensor_init\n\r");
               //setting MFIO and RESET as output, reset is set and mfio is cleared
               pulse_oximeter_init_pins();
               //bio_hub_init();
@@ -199,7 +179,7 @@ void oximeter_state_machine(sl_bt_msg_t *evt) {
               break;
 
             case state_wait_10ms:
-              LOG_INFO("In state_wait_10ms\n\r");
+            //  LOG_INFO("In state_wait_10ms\n\r");
               if(evt->data.evt_system_external_signal.extsignals == LETIMER0_COMP1 ){
                   LOG_INFO("In if case of state_wait_10ms\n\r");
                 //set reset pin
@@ -214,7 +194,7 @@ void oximeter_state_machine(sl_bt_msg_t *evt) {
               break;
 
             case state_wait_1s:
-              LOG_INFO("In state_wait_1s\n\r");
+             // LOG_INFO("In state_wait_1s\n\r");
               if(evt->data.evt_system_external_signal.extsignals == LETIMER0_COMP1 ){
                   LOG_INFO("In if case of state_wait_1s\n\r");
                 //set MFIO pin as an interrupt
@@ -233,7 +213,7 @@ void oximeter_state_machine(sl_bt_msg_t *evt) {
               break;
 
             case state_read_return_check:
-              LOG_INFO("In state_read_return_check\n\r");
+          //    LOG_INFO("In state_read_return_check\n\r");
               if(evt->data.evt_system_external_signal.extsignals == LETIMER0_COMP1 ){
 
                   //perform read to check the return value
@@ -254,7 +234,7 @@ void oximeter_state_machine(sl_bt_msg_t *evt) {
               break;
 
             case state_set_output_mode:
-              LOG_INFO("In state_set_output_mode\n\r");
+           //   LOG_INFO("In state_set_output_mode\n\r");
               if(evt->data.evt_system_external_signal.extsignals == LETIMER0_COMP1 ){
 
                  //perform read to check the return value
@@ -275,7 +255,7 @@ void oximeter_state_machine(sl_bt_msg_t *evt) {
               break;
 
             case state_setFifoThreshold:
-              LOG_INFO("In state_setFifoThreshold\n\r");
+          //    LOG_INFO("In state_setFifoThreshold\n\r");
               if(evt->data.evt_system_external_signal.extsignals == LETIMER0_COMP1 ){
 
                   //LOG_INFO("In state_setFifoThreshold!!\n\r");
@@ -302,7 +282,7 @@ void oximeter_state_machine(sl_bt_msg_t *evt) {
               break;
 
             case state_agcAlgoControl:
-              LOG_INFO("In state_agcAlgoControl\n\r");
+        //      LOG_INFO("In state_agcAlgoControl\n\r");
               if(evt->data.evt_system_external_signal.extsignals == LETIMER0_COMP1 ){
 
                   //LOG_INFO("In state_agcAlgoControl!!\n\r");
@@ -327,7 +307,7 @@ void oximeter_state_machine(sl_bt_msg_t *evt) {
               break;
 
             case state_max30101Control:
-              LOG_INFO("In state_max30101Control\n\r");
+     //         LOG_INFO("In state_max30101Control\n\r");
               if(evt->data.evt_system_external_signal.extsignals == LETIMER0_COMP1 ){
 
                   //LOG_INFO("In state_max30101Control!!\n\r");
@@ -351,7 +331,7 @@ void oximeter_state_machine(sl_bt_msg_t *evt) {
               break;
 
             case state_maximFastAlgoControl:
-              LOG_INFO("In state_maximFastAlgoControl\n\r");
+        //      LOG_INFO("In state_maximFastAlgoControl\n\r");
               if(evt->data.evt_system_external_signal.extsignals == LETIMER0_COMP1 ){
 
                   //LOG_INFO("In state_maximFastAlgoControl!!\n\r");
@@ -375,7 +355,7 @@ void oximeter_state_machine(sl_bt_msg_t *evt) {
               break;
 
             case state_readAlgoSamples:
-              LOG_INFO("In state_readAlgoSamples\n\r");
+       //       LOG_INFO("In state_readAlgoSamples\n\r");
               if(evt->data.evt_system_external_signal.extsignals == LETIMER0_COMP1 ){
 
 
@@ -395,7 +375,7 @@ void oximeter_state_machine(sl_bt_msg_t *evt) {
               break;
 
             case state_wait_before_reading:
-              LOG_INFO("In state_wait_before_reading\n\r");
+        //      LOG_INFO("In state_wait_before_reading\n\r");
               if(evt->data.evt_system_external_signal.extsignals == LETIMER0_COMP1 ){
 
                   //read the sensor status
@@ -410,7 +390,7 @@ void oximeter_state_machine(sl_bt_msg_t *evt) {
 
               else if(bleData->pulse_on){
 
-                  LOG_INFO("In else if of state_wait_before_reading\n\r");
+            //      LOG_INFO("In else if of state_wait_before_reading\n\r");
                   //read the sensor status
                    read_sensor_hub_status_func();
 
@@ -423,7 +403,7 @@ void oximeter_state_machine(sl_bt_msg_t *evt) {
               break;
 
             case state_read_sensor_hub_status:
-              LOG_INFO("In state_read_Sensor_hub_status\n\r");
+       //       LOG_INFO("In state_read_Sensor_hub_status\n\r");
                   if(evt->data.evt_system_external_signal.extsignals == LETIMER0_COMP1 ){
 
                         //read for checking the return value
@@ -444,7 +424,7 @@ void oximeter_state_machine(sl_bt_msg_t *evt) {
               break;
 
             case state_numSamplesOutFifo:
-              LOG_INFO("In state_numSamplesOutFifo\n\r");
+     //         LOG_INFO("In state_numSamplesOutFifo\n\r");
                 if(evt->data.evt_system_external_signal.extsignals == LETIMER0_COMP1 ){
 
                     //perform a read to check the return value
@@ -466,7 +446,7 @@ void oximeter_state_machine(sl_bt_msg_t *evt) {
               break;
 
             case state_read_fill_array:
-              LOG_INFO("In state_read_fill_array\n\r");
+      //        LOG_INFO("In state_read_fill_array\n\r");
                 if(evt->data.evt_system_external_signal.extsignals == LETIMER0_COMP1){
 
                     //read the actual data
@@ -497,7 +477,7 @@ void oximeter_state_machine(sl_bt_msg_t *evt) {
               break;
 
             case state_disable_AFE:
-              LOG_INFO("In state_disable_AFE\n\r");
+      //        LOG_INFO("In state_disable_AFE\n\r");
                   if(evt->data.evt_system_external_signal.extsignals == LETIMER0_COMP1){
                   //disable AFE
                               disable_AFE_func();
@@ -511,7 +491,7 @@ void oximeter_state_machine(sl_bt_msg_t *evt) {
               break;
 
             case state_disable_algo:
-              LOG_INFO("In state_disableAlgo\n\r");
+       //       LOG_INFO("In state_disableAlgo\n\r");
               if(evt->data.evt_system_external_signal.extsignals == LETIMER0_COMP1){
 
                           //perform a read to check the return value
@@ -532,7 +512,7 @@ void oximeter_state_machine(sl_bt_msg_t *evt) {
               break;
 
            case state_pulse_done:
-             LOG_INFO("In state_pulse_dones\n\r");
+       //      LOG_INFO("In state_pulse_dones\n\r");
               if(evt->data.evt_system_external_signal.extsignals == LETIMER0_COMP1){
                             //perform a read to check the return value
                   I2C_read_polled_pulse();
@@ -579,7 +559,7 @@ void temp_state_machine(sl_bt_msg_t *event)
        // Check if LETIMER0 underflow event occurred
         if (event->data.evt_system_external_signal.extsignals == LETIMER0_UF)
         {
-          LOG_INFO("timerUF event\n\r");
+     //     LOG_INFO("timerUF event\n\r");
           timerWaitUs_irq(80000);        // Wait for 80 milliseconds
           Next_State = StateB_Wait;      // Transition to StateB_Wait
         }
@@ -591,7 +571,7 @@ void temp_state_machine(sl_bt_msg_t *event)
             // Check if LETIMER0 compare1 event occurred
             if (event->data.evt_system_external_signal.extsignals ==LETIMER0_COMP1 )
             {
-                LOG_INFO("Comp1 event\n\r");
+     //           LOG_INFO("Comp1 event\n\r");
                 // Remove energy mode requirement EM1.
                 //sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM1); // Add EM1 requirement
                 i2c_Write();                               // Perform I2C write operation
@@ -605,7 +585,7 @@ void temp_state_machine(sl_bt_msg_t *event)
             // Check if I2C operation is complete
             if (event->data.evt_system_external_signal.extsignals ==I2C_COMPLETE )
             {
-                LOG_INFO("write transfer done\n\r");
+      //          LOG_INFO("write transfer done\n\r");
                 //sl_power_manager_remove_em_requirement(SL_POWER_MANAGER_EM1); // Remove EM1 requirement
 
                 timerWaitUs_irq(10800);         // Wait for 10.8 milliseconds
@@ -633,7 +613,7 @@ void temp_state_machine(sl_bt_msg_t *event)
             // Check if I2C operation is complete
             if (event->data.evt_system_external_signal.extsignals ==I2C_COMPLETE)
             {
-                LOG_INFO("read transfer  done\n\r");
+   //             LOG_INFO("read transfer  done\n\r");
                //sl_power_manager_remove_em_requirement(SL_POWER_MANAGER_EM1); // Remove EM1 requirement
                                                    // Disable temperature sensor
                 NVIC_DisableIRQ(I2C0_IRQn);                                  // Disable I2C interrupt
@@ -663,192 +643,331 @@ return;
  * @param evt Pointer to the BLE event message structure.
  */
 void discovery_state_machine(sl_bt_msg_t *evt){
-  static state Next_State = StateA_client_idle; // Next state, initialized to StateA_Sleep
-  state Present_State ;       // Current state
-  ble_data_struct_t *bleData = getBleDataPtr();   // Get pointer to BLE data structure
+  state currentState;
+   static state nextState = State0_client_idle;
 
-  // If connection closed event, reset to initial state
-  if(SL_BT_MSG_ID(evt->header)==sl_bt_evt_connection_closed_id)
-  {
-      Next_State=StateA_client_idle;
-  }
+   ble_data_struct_t *bleData = getBleDataPtr();
 
-  Present_State=Next_State;   // Update current state
+   if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_connection_closed_id) {
+       nextState = State0_client_idle;
+   }
 
+   currentState = nextState;     //set current state of the process
   // State machine switch case
-  switch(Present_State)
+  switch(currentState)
   {
-    case StateA_client_idle:
+    //stay in idle state
+       case State0_client_idle:
+         nextState = State0_client_idle;          //default
 
-      Next_State = StateA_client_idle;          //default
+         //wait for connection open event
+         if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_connection_opened_id) {
 
-      // If connection opened event
-      if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_connection_opened_id)
-      {
+             //LOG_INFO("Discovering services\n\r");
 
-       // Perform GATT procedure: discover primary services by UUID
-
-
-
-      rc = sl_bt_gatt_discover_primary_services_by_uuid(bleData->connection_handle,
-                                                                  sizeof(thermo_service),
-                                                                  (const uint8_t*)thermo_service);
-      if(rc != SL_STATUS_OK)
-      {
-   //       LOG_ERROR("sl_bt_gatt_discover_primary_services_by_uuid() returned != 0 status=0x%04x\n\r", (unsigned int)rc);
-      }
-      bleData->gatt_procedure = true;
-      Next_State = StateB_get_another_service;// Transition to next state
-      }
-
-
-    break;
-
-    case StateB_get_another_service:
-      Next_State = StateB_get_another_service;
-
-      // If GATT procedure completed event
-      if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id)
-      {
-
-          // Perform GATT procedure: discover characteristics by UUID
-        rc = sl_bt_gatt_discover_primary_services_by_uuid(bleData->connection_handle,
-                                                          sizeof(button_service),
-                                                         (const uint8_t*)button_service);
-
-        if(rc != SL_STATUS_OK)
-        {
-             LOG_ERROR("sl_bt_gatt_discover_characteristics_by_uuid() returned != 0 status=0x%04x\n\r", (unsigned int)rc);
-        }
-
-        bleData->gatt_procedure = true;
-        Next_State =     StateC_got_service;// Transition to next state
-       }
-
-
-    break;
-    case StateC_got_service :
-         Next_State = StateC_got_service ;
-
-         // If connection closed event
-         if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id)
-           {
-
-            rc = sl_bt_gatt_discover_characteristics_by_uuid(bleData->connection_handle,
-                                                             bleData->service_handle,
-                                                             sizeof(thermo_char),
-                                                            (const uint8_t*)thermo_char);
-
-              if(rc != SL_STATUS_OK)
-                {
-                   LOG_ERROR("sl_bt_gatt_discover_characteristics_by_uuid() 2 returned != 0 status=0x%04x\n\r", (unsigned int)rc);
-                }
-
-              bleData->gatt_procedure = true;
-             // Go to idle state to wait for connection open event
-             Next_State = StateD_got_another_service;
-         }
-
-      break;
-    case  StateD_got_another_service :
-
-      Next_State =  StateD_got_another_service ;
-
-      // If GATT procedure completed event
-      if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id)
-     {
-
-      rc = sl_bt_gatt_discover_characteristics_by_uuid(bleData->connection_handle,
-                                                       bleData->button_service_handle,
-                                                       sizeof(button_charac),
-                                                       (const uint8_t*) button_charac);
-       if(rc != SL_STATUS_OK)
-      {
- //         LOG_ERROR("sl_bt_gatt_discover_characteristics_by_uuid() 1 returned != 0 status=0x%04x\n\r", (unsigned int)rc);
-      }
-
-       bleData->gatt_procedure = true;
-      Next_State = StateE_got_char;     // Transition to next state
-      }
-
-
-    break;
-
-    case StateE_got_char:
-      Next_State = StateE_got_char;
-
-      // If GATT procedure completed event
-      if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id)
-        {
-
-          rc = sl_bt_gatt_set_characteristic_notification(bleData->connection_handle,
-                                                                   bleData->char_handle,
-                                                                   sl_bt_gatt_indication);
-           if(rc != SL_STATUS_OK)
-             {
-                LOG_ERROR("sl_bt_gatt_set_characteristic_notification() returned != 0 status=0x%04x\n\r", (unsigned int)rc);
+             //Discover primary services with the specified UUID in a remote GATT database.
+             rc = sl_bt_gatt_discover_primary_services_by_uuid(bleData->connection_handle,
+                                                               sizeof(thermo_service),
+                                                               (const uint8_t*)thermo_service);
+             if(rc != SL_STATUS_OK) {
+                 LOG_ERROR("sl_bt_gatt_discover_primary_services_by_uuid() 1 returned != 0 status=0x%04x\n\r", (unsigned int)rc);
              }
 
-           bleData->gatt_procedure = true;
-          Next_State = StateF_got_another_char; // Transition to next state
-      }
+             nextState = State1_get_temp_char;          //default
+         }
+         break;
+
+         //got service from server
+        case State1_get_temp_char:
+          nextState = State1_get_temp_char;
+
+          //wait for previous gatt command to be completed
+          if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id) {
+
+              //LOG_INFO("Discovering characteristics\n\r");
 
 
+              //Discover all characteristics of a GATT service in a remote GATT database
+              // having the specified UUID
+              rc = sl_bt_gatt_discover_characteristics_by_uuid(bleData->connection_handle,
+                                                               bleData->service_handle,
+                                                               sizeof(thermo_char),
+                                                               (const uint8_t*)thermo_char);
+              if(rc != SL_STATUS_OK) {
+                  LOG_ERROR("sl_bt_gatt_discover_characteristics_by_uuid() 1 returned != 0 status=0x%04x\n\r", (unsigned int)rc);
+              }
 
-     break;
+              nextState = State2_set_temp_ind;
+          }
 
-    case StateF_got_another_char:
-      Next_State =StateF_got_another_char;
-      if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id)
-        {
+          break;
+
+          //got characteristic from server
+           //enable indications for temperature service
+         case State2_set_temp_ind:
+           nextState = State2_set_temp_ind;
+
+           //wait for previous gatt command to be completed
+           if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id) {
+
+               //LOG_INFO("Enabling notifications\n\r");
 
 
-                ///LOG_INFO("Enabling notifications 2\n\r");
+               //enable indications sent from server
+               rc = sl_bt_gatt_set_characteristic_notification(bleData->connection_handle,
+                                                               bleData->char_handle,
+                                                               sl_bt_gatt_indication);
+               if(rc != SL_STATUS_OK) {
+                   LOG_ERROR("sl_bt_gatt_set_characteristic_notification() returned != 0 status=0x%04x\n\r", (unsigned int)rc);
+               }
 
-           rc = sl_bt_gatt_set_characteristic_notification(bleData->connection_handle,
-                                                           bleData->button_char_handle,
-                                                           sl_bt_gatt_indication);
-           if(rc != SL_STATUS_OK)
-             {
+               nextState = State0_get_button_service;
+           }
+
+           break;
+
+         //discover button state service
+       case State0_get_button_service:
+         nextState = State0_get_button_service;          //default
+
+         //wait for previous gatt command to be completed
+         if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id) {
+
+
+             //LOG_INFO("Discovering services 2\n\r");
+
+             rc = sl_bt_gatt_discover_primary_services_by_uuid(bleData->connection_handle,
+                                                               sizeof(button_service),
+                                                               (const uint8_t*)button_service);
+             if(rc != SL_STATUS_OK) {
+                 LOG_ERROR("sl_bt_gatt_discover_primary_services_by_uuid() 2 returned != 0 status=0x%04x\n\r", (unsigned int)rc);
+             }
+
+             nextState = State1_get_button_char;
+         }
+
+         break;
+
+         //discover button state characteristics
+       case State1_get_button_char:
+         nextState = State1_get_button_char;
+
+         //wait for previous gatt command to be completed
+         if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id) {
+
+
+             //LOG_INFO("Discovering services 2\n\r");
+
+             rc = sl_bt_gatt_discover_characteristics_by_uuid(bleData->connection_handle,
+                                                              bleData->button_service_handle,
+                                                              sizeof(button_charac),
+                                                              (const uint8_t*)button_charac);
+             if(rc != SL_STATUS_OK) {
+                 LOG_ERROR("sl_bt_gatt_discover_characteristics_by_uuid() 2 returned != 0 status=0x%04x\n\r", (unsigned int)rc);
+             }
+
+             nextState = State2_set_button_ind;
+         }
+
+         break;
+
+         //enble indications for button state service
+        case State2_set_button_ind:
+          nextState = State2_set_button_ind;
+
+          //wait for previous gatt command to be completed
+          if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id) {
+
+
+              //LOG_INFO("Enabling notifications 2\n\r");
+
+              rc = sl_bt_gatt_set_characteristic_notification(bleData->connection_handle,
+                                                              bleData->button_char_handle,
+                                                              sl_bt_gatt_indication);
+
+              if(rc != SL_STATUS_OK) {
+                  LOG_ERROR("sl_bt_gatt_set_characteristic_notification() returned != 0 status=0x%04x\n\r", (unsigned int)rc);
+              }
+
+              bleData->button_indication = true;
+
+              //displayPrintf(DISPLAY_ROW_CONNECTION, "Handling indications");
+              nextState = State0_get_gesture_service;
+          }
+
+          break;
+
+         //discover button state service
+       case State0_get_gesture_service:
+         nextState = State0_get_gesture_service;          //default
+
+         //wait for previous gatt command to be completed
+         if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id) {
+         //if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_connection_opened_id) {
+
+             //LOG_INFO("Discovering services 3\n\r");
+
+             rc = sl_bt_gatt_discover_primary_services_by_uuid(bleData->connection_handle,
+                                                               sizeof(gesture_service),
+                                                               (const uint8_t*)gesture_service);
+             if(rc != SL_STATUS_OK) {
+                 LOG_ERROR("sl_bt_gatt_discover_primary_services_by_uuid() 2 returned != 0 status=0x%04x\n\r", (unsigned int)rc);
+             }
+
+             nextState = State1_get_gesture_char;
+         }
+
+         break;
+
+         //discover button state characteristics
+       case State1_get_gesture_char:
+         nextState = State1_get_gesture_char;
+
+         //wait for previous gatt command to be completed
+         if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id) {
+
+
+             //LOG_INFO("Discovering services 3\n\r");
+
+             rc = sl_bt_gatt_discover_characteristics_by_uuid(bleData->connection_handle,
+                                                              bleData->gesture_service_handle,
+                                                              sizeof(gesture_charac),
+                                                              (const uint8_t*)gesture_charac);
+             if(rc != SL_STATUS_OK) {
+                 LOG_ERROR("sl_bt_gatt_discover_characteristics_by_uuid() 2 returned != 0 status=0x%04x\n\r", (unsigned int)rc);
+             }
+
+             nextState = State2_set_gesture_ind;
+         }
+
+         break;
+
+         //enble indications for button state service
+        case State2_set_gesture_ind:
+          nextState = State2_set_gesture_ind;
+
+          //wait for previous gatt command to be completed
+          if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id) {
+
+
+              //LOG_INFO("Enabling notifications 3\n\r");
+
+              rc = sl_bt_gatt_set_characteristic_notification(bleData->connection_handle,
+                                                              bleData->gesture_char_handle,
+                                                              sl_bt_gatt_indication);
+
+              if(rc != SL_STATUS_OK) {
+                  LOG_ERROR("sl_bt_gatt_set_characteristic_notification() returned != 0 status=0x%04x\n\r", (unsigned int)rc);
+              }
+
+              bleData->gesture_indication = true;
+
+              //displayPrintf(DISPLAY_ROW_CONNECTION, "Handling indications");
+              nextState =  State0_get_oximeter_service;
+          }
+
+          break;
+
+         //discover button state service
+       case  State0_get_oximeter_service:
+         nextState =  State0_get_oximeter_service;          //default
+
+         //wait for previous gatt command to be completed
+         if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id) {
+
+
+             //LOG_INFO("Discovering services 4\n\r");
+
+             rc = sl_bt_gatt_discover_primary_services_by_uuid(bleData->connection_handle,
+                                                               sizeof(oximeter_service),
+                                                               (const uint8_t*)oximeter_service);
+             if(rc != SL_STATUS_OK) {
+                 LOG_ERROR("sl_bt_gatt_discover_primary_services_by_uuid() 2 returned != 0 status=0x%04x\n\r", (unsigned int)rc);
+             }
+
+             nextState = State1_get_oximeter_char;
+         }
+
+         break;
+
+         //discover button state characteristics
+       case State1_get_oximeter_char:
+         nextState = State1_get_oximeter_char;
+
+         //wait for previous gatt command to be completed
+         if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id) {
+
+
+             //LOG_INFO("Discovering services 4\n\r");
+
+             rc = sl_bt_gatt_discover_characteristics_by_uuid(bleData->connection_handle,
+                                                              bleData->pulse_service_handle,
+                                                              sizeof(oximeter_charac),
+                                                              (const uint8_t*)oximeter_charac);
+             if(rc != SL_STATUS_OK) {
+                 LOG_ERROR("sl_bt_gatt_discover_characteristics_by_uuid() 2 returned != 0 status=0x%04x\n\r", (unsigned int)rc);
+             }
+
+             nextState = State2_set_oximeter_ind;
+         }
+
+         break;
+
+         //enble indications for button state service
+       case State2_set_oximeter_ind:
+         nextState = State2_set_oximeter_ind;
+
+         //wait for previous gatt command to be completed
+         if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id) {
+
+
+             //LOG_INFO("Enabling notifications 4\n\r");
+
+             rc = sl_bt_gatt_set_characteristic_notification(bleData->connection_handle,
+                                                             bleData->pulse_char_handle,
+                                                             sl_bt_gatt_indication);
+
+             if(rc != SL_STATUS_OK) {
                  LOG_ERROR("sl_bt_gatt_set_characteristic_notification() returned != 0 status=0x%04x\n\r", (unsigned int)rc);
              }
 
-                //gatt command in process
-           bleData->gatt_procedure = true;
-           bleData->button_indication = true;
+             bleData->pulse_indication = true;
 
-           displayPrintf(DISPLAY_ROW_CONNECTION, "Handling indications");
-           Next_State = StateG_set_indication;
-            }
+             displayPrintf(DISPLAY_ROW_CONNECTION, "Handling indications");
+             nextState = State3_all_set;
+         }
 
-            break;
+         break;
 
-    case StateG_set_indication:
-      Next_State =StateG_set_indication ;
-      if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id)
-        {
+         //indication is set on from server
+       case State3_all_set:
+         nextState =State3_all_set;
 
-          Next_State = StateH_wait_for_close;
-        }
+         //gatt complete
+         if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id) {
 
-        break;
+             nextState = State4_wait_for_close;
+         }
 
-    case StateH_wait_for_close:
-      Next_State =StateH_wait_for_close ;
-      if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_connection_closed_id)
-        {
+         break;
 
-           //go in idle state to wait for a connection open event
-          Next_State = StateA_client_idle;
-       }
+         //state to wait for a connection close event
+       case State4_wait_for_close:
+         nextState = State4_wait_for_close;
 
-       break;
+         if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_connection_closed_id) {
 
-    default:
+             //go in idle state to wait for a connection open event
+             nextState = State0_client_idle;
+         }
 
- //      LOG_ERROR("Should not be here in state machine\n\r");
+         break;
 
-    break;
+       default:
+
+         LOG_ERROR("Should not be here in state machine\n\r");
+
+         break;
   }
 
 

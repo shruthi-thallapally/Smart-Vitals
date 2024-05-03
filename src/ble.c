@@ -396,7 +396,7 @@ void handle_ble_event(sl_bt_msg_t *evt) {
         if(bleData->PB1_button_pressed)
           {
             LOG_INFO("Gesture Sensor Enabled\n\r");
-            displayPrintf(DISPLAY_ROW_10, "Gesture Sensor ON!");
+            displayPrintf(DISPLAY_ROW_10, "Enable gesture sensor");
             flag=SparkFun_APDS9960_init();
             if(flag != true)
               {
@@ -480,22 +480,43 @@ void handle_ble_event(sl_bt_msg_t *evt) {
 
                     displayPrintf(DISPLAY_ROW_9, "");
                 }
-
-              else if(evt->data.evt_gatt_server_characteristic_status.client_config_flags == gatt_indication)
-                {
-//                  // Enable indication
-//                  bleData->indication = true;
-//                  gpioLed0SetOn();
-                }
-
+              else if(evt->data.evt_gatt_server_characteristic_status.client_config_flags == gatt_indication) {
+                               //bleData->gesture_indication = true;
+                               //gpioLed0SetOn();
+                               //LOG_INFO("gesture indication on\n\r");
+                           }
             }
         }
+      //check if the characteristic change is from Push button
+           if(evt->data.evt_gatt_server_characteristic_status.characteristic == gattdb_oximeter_state) {
 
+               //check if any status flag has been changed by client
+               if (sl_bt_gatt_server_client_config == (sl_bt_gatt_server_characteristic_status_flag_t)
+                   evt->data.evt_gatt_server_characteristic_status.status_flags) {
+
+                   //check if indication flag is disabled
+                   if(evt->data.evt_gatt_server_characteristic_status.client_config_flags == gatt_disable) {
+                       //bleData->oximeter_indication = false;
+                       //gpioLed1SetOff();
+                       //LOG_INFO("oximeter indication off\n\r");
+
+                   }
+
+                   //check if indication flag is enabled
+                   else if(evt->data.evt_gatt_server_characteristic_status.client_config_flags == gatt_indication) {
+                       //bleData->oximeter_indication = true;
+                       //gpioLed1SetOn();
+                       //LOG_INFO("oximeter indication on\n\r");
+                   }
+
+               }
+
+           }
       // Check confirmation status
       if (sl_bt_gatt_server_confirmation == (sl_bt_gatt_server_characteristic_status_flag_t)
           evt->data.evt_gatt_server_characteristic_status.status_flags) {
           bleData->indication_inFlight = false;
-          LOG_INFO("\n\r Confirmation received for an indication");
+          //LOG_INFO("\n\r Confirmation received for an indication");
       }
 
       break;
@@ -565,7 +586,7 @@ void handle_ble_event(sl_bt_msg_t *evt) {
 
     case sl_bt_evt_gatt_service_id:
 
-      LOG_INFO("Service Found Evt"); // DOS
+      //LOG_INFO("Service Found Evt"); // DOS
 
       // Store service handle
       if(memcmp(evt->data.evt_gatt_service.uuid.data, thermo_service, sizeof(thermo_service)) == 0)
@@ -582,7 +603,7 @@ void handle_ble_event(sl_bt_msg_t *evt) {
         {
           bleData->gesture_service_handle = evt->data.evt_gatt_service.service;
         }
-      else if(memcmp(evt->data.evt_gatt_service.uuid.data, max30101_service, sizeof(max30101_service)) == 0)
+      else if(memcmp(evt->data.evt_gatt_service.uuid.data, oximeter_service, sizeof(oximeter_service)) == 0)
         {
           bleData->pulse_service_handle = evt->data.evt_gatt_service.service;
         }
@@ -590,28 +611,28 @@ void handle_ble_event(sl_bt_msg_t *evt) {
 
     case sl_bt_evt_gatt_characteristic_id:
 
-      LOG_INFO("Char Found Evt"); // DOS
+      //LOG_INFO("Char Found Evt"); // DOS
 
       // Store characteristic handle
       if(memcmp(evt->data.evt_gatt_characteristic.uuid.data, thermo_char, sizeof(thermo_char)) == 0)
         {
           bleData->char_handle = evt->data.evt_gatt_characteristic.characteristic;
-          LOG_INFO("HTM Char Found Evt"); // DOS
+          //LOG_INFO("HTM Char Found Evt"); // DOS
         }
       else if(memcmp(evt->data.evt_gatt_characteristic.uuid.data, button_charac, sizeof(button_charac)) == 0)
         {
           bleData->button_char_handle = evt->data.evt_gatt_characteristic.characteristic;
-          LOG_INFO("btn Service Found Evt"); // DOS
+         // LOG_INFO("btn Service Found Evt"); // DOS
         }
       else if(memcmp(evt->data.evt_gatt_characteristic.uuid.data, gesture_charac, sizeof(gesture_charac)) == 0)
         {
           bleData->gesture_char_handle = evt->data.evt_gatt_characteristic.characteristic;
-          LOG_INFO("gesture Service Found Evt");
+          //LOG_INFO("gesture Service Found Evt");
         }
-      else if(memcmp(evt->data.evt_gatt_characteristic.uuid.data, max30101_charac, sizeof(max30101_charac)) == 0)
+      else if(memcmp(evt->data.evt_gatt_characteristic.uuid.data, oximeter_charac, sizeof(oximeter_charac)) == 0)
         {
           bleData->pulse_char_handle = evt->data.evt_gatt_characteristic.characteristic;
-          LOG_INFO("oximeter Service Found Evt");
+          //LOG_INFO("oximeter Service Found Evt");
         }
 
       break;
@@ -914,7 +935,7 @@ void ble_SendButtonStatus(uint8_t value)
           // Check if an indication is already in flight
           if(bleData->indication_inFlight)
             {
-              LOG_INFO("\n\r Indication is in flight\n\r");
+             // LOG_INFO("\n\r Indication is in flight\n\r");
             }
           else
             {
@@ -931,7 +952,7 @@ void ble_SendButtonStatus(uint8_t value)
               else
                 {
                   // Set indication in flight flag
-                  LOG_INFO("\n\r Indication Sent successfully");
+                 // LOG_INFO("\n\r Indication Sent successfully");
                   bleData->indication_inFlight=true;
                 }
             }

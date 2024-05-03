@@ -12,11 +12,11 @@
 #include "src/gpio.h"
 #include <stdbool.h>
 
-#define MAX30101_port  (0)//gpioPortA
+#define MAX30101_port  (2)//gpioPortA
 
-#define MFIO_pin 2
+#define MFIO_pin 7
 
-#define RESET_pin 3
+#define RESET_pin 9
 
 void turn_off_reset();
 

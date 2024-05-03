@@ -300,13 +300,13 @@ void sl_bt_on_event(sl_bt_msg_t *evt)
   // sequence through states driven by events
   gesture_state_machine(evt);
  if((bleData->gesture_value == 0x01) || (bleData->gesture_value == 0x02)){
-
+     bleData->pulse_on = true;
       oximeter_state_machine(evt);
   }
 
   if(bleData->gesture_value==0x03)
   {
-           LOG_INFO("Down\n\r");
+          // LOG_INFO("Down\n\r");
 
            temp_state_machine(evt);
   }
