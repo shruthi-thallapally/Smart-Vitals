@@ -1,5 +1,3 @@
-# ecen5823-f22-assignments
-Starter code based on Gecko SDK 3.2.3
 # Smart Vitals 
 ## Shall have ADPS9960 Gesture sensor along with MAX Bio Hub Pulse oximeter & Heartrate sensor as peripherals. And one blue gecko as a client and other as server functionality. For temperature monitoring we are using on board SI7021 Temperature and Humidity sensor.
 •	Gesture Recognition: The Smart Vital shall reliably detect hand gestures using the interfaced gesture sensor and trigger corresponding actions such as for right gesture detection respond with oximeter reading on the LCD of client, likewise for left with temperature reading and up with heartrate reading.
