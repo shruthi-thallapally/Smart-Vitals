@@ -260,6 +260,8 @@ void handle_ble_event(sl_bt_msg_t *evt) {
 
       bleData->pulse_indication    =false;
       bleData->pulse_on            =false;
+      bleData->oximeter_busy       =false;
+      bleData->temp_busy          =false;
       break;
 
       // Handle connection opened event
@@ -333,6 +335,8 @@ void handle_ble_event(sl_bt_msg_t *evt) {
       bleData->gesture_indication  =false;
       bleData->pulse_indication    =false;
       bleData->pulse_on            =false;
+      bleData->oximeter_busy       =false;
+      bleData->temp_busy           =false;
       sc = sl_bt_sm_delete_bondings();
       if(sc != SL_STATUS_OK)
         {

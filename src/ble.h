@@ -108,6 +108,11 @@ typedef struct {
   uint32_t pulse_service_handle;
   uint16_t pulse_char_handle;
 
+  /** True while oximeter state machine is running (not in state_pulse_done). Lets gesture dispatch keep feeding oximeter until done. */
+  bool oximeter_busy;
+  /** True while temp state machine is running (not in StateA_Sleep). Lets gesture dispatch keep feeding temp until done. */
+  bool temp_busy;
+
 } ble_data_struct_t;
 
 /**
@@ -268,6 +273,11 @@ typedef struct {
   bool pulse_on;
   uint32_t pulse_service_handle;
   uint16_t pulse_char_handle;
+
+  /** True while oximeter state machine is running (not in state_pulse_done). Lets gesture dispatch keep feeding oximeter until done. */
+  bool oximeter_busy;
+  /** True while temp state machine is running (not in StateA_Sleep). Lets gesture dispatch keep feeding temp until done. */
+  bool temp_busy;
 
 } ble_data_struct_t;
 

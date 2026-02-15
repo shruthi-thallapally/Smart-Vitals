@@ -2,7 +2,7 @@
  * scheduler.c
  *
  *  Created on: 04-Apr-2024
- *      Author: Tharuni Gelli
+ *      Author: Shruthi Thallapally
  *  Reference: Code reference taken from the lecture slides
  *  Note: Sometimes warnings are generated due to the log statements.
  *   I have commented LOG_ERROR statements to avoid generating unwanted warnings
@@ -537,6 +537,8 @@ void oximeter_state_machine(sl_bt_msg_t *evt) {
               break;
 
       }
+    /* Keep feeding this state machine until done, even if a new gesture (e.g. UP) arrives. */
+    bleData->oximeter_busy = (nextState != state_pulse_done);
     return;
 }
 /**
@@ -628,7 +630,9 @@ void temp_state_machine(sl_bt_msg_t *event)
   //          LOG_ERROR("not in the state machine\n\r"); // Log error if not in any defined state
             break;
     }
-return;
+    /* Keep feeding this state machine until done, even if a new gesture (e.g. LEFT/RIGHT) arrives. */
+    bleData->temp_busy = (Next_State != StateA_Sleep);
+    return;
 }
 
 
