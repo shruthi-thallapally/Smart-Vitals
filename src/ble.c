@@ -47,6 +47,60 @@ ble_data_struct_t ble_data;
 
 int32_t temp_in_c;
 
+#if DEVICE_IS_BLE_SERVER
+/* Circular buffer for gesture indications when one is already in flight */
+static uint8_t gesture_queue[GESTURE_QUEUE_SIZE];
+static uint8_t gesture_queue_head;  /* next write index */
+static uint8_t gesture_queue_tail;  /* next read index */
+static uint8_t gesture_queue_count; /* number of items in queue */
+
+static bool gesture_queue_is_empty(void)
+{
+  return (gesture_queue_count == 0);
+}
+
+static bool gesture_queue_is_full(void)
+{
+  return (gesture_queue_count >= GESTURE_QUEUE_SIZE);
+}
+
+static bool gesture_queue_push(uint8_t value)
+{
+  if (gesture_queue_is_full()) {
+    /* Drop oldest: advance tail and count stays same, then write new at head */
+    gesture_queue_tail = (gesture_queue_tail + 1) % GESTURE_QUEUE_SIZE;
+  } else {
+    gesture_queue_count++;
+  }
+  gesture_queue[gesture_queue_head] = value;
+  gesture_queue_head = (gesture_queue_head + 1) % GESTURE_QUEUE_SIZE;
+  return true;
+}
+
+static bool gesture_queue_pop(uint8_t *value)
+{
+  if (gesture_queue_is_empty()) {
+    return false;
+  }
+  *value = gesture_queue[gesture_queue_tail];
+  gesture_queue_tail = (gesture_queue_tail + 1) % GESTURE_QUEUE_SIZE;
+  gesture_queue_count--;
+  return true;
+}
+
+/** Send next queued gesture if none in flight and queue not empty. */
+static void ble_TrySendNextGesture(void)
+{
+  ble_data_struct_t *bleData = getBleDataPtr();
+  if (!bleData->indication_inFlight && !gesture_queue_is_empty()) {
+    uint8_t state;
+    if (gesture_queue_pop(&state)) {
+      ble_SendGesture(state);
+    }
+  }
+}
+#endif
+
 uint8_t server_addr[6]= SERVER_BT_ADDRESS;
 
 uint16_t supervision_timeout = 0x50;   //800ms supervision timeout
@@ -516,6 +570,7 @@ void handle_ble_event(sl_bt_msg_t *evt) {
       if (sl_bt_gatt_server_confirmation == (sl_bt_gatt_server_characteristic_status_flag_t)
           evt->data.evt_gatt_server_characteristic_status.status_flags) {
           bleData->indication_inFlight = false;
+          ble_TrySendNextGesture(); /* send next queued gesture if any */
           //LOG_INFO("\n\r Confirmation received for an indication");
       }
 
@@ -838,6 +893,16 @@ void ble_SendPulseState(uint8_t * pulse_data)
         }
     }
 }
+void ble_EnqueueGesture(uint8_t state)
+{
+#if DEVICE_IS_BLE_SERVER
+  gesture_queue_push(state);
+  ble_TrySendNextGesture();
+#else
+  (void)state;
+#endif
+}
+
 void ble_SendGesture(uint8_t state)
 {
   // Get pointer to BLE data structure

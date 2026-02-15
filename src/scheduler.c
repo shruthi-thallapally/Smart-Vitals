@@ -57,7 +57,7 @@ void handle_gesture() {
           bleData->gesture_on = false;
           displayPrintf(DISPLAY_ROW_ACTION, "Gesture sensor OFF");
           //LOG_INFO("Sending down gesture\n\r");
-          ble_SendGesture(0x04);
+          ble_EnqueueGesture(0x04);
           break;
 
         case DIR_UP:
@@ -65,7 +65,7 @@ void handle_gesture() {
           bleData->gesture_value = 0x03;
           displayPrintf(DISPLAY_ROW_9, "Gesture = UP");
           //LOG_INFO("Sending up gesture\n\r");
-          ble_SendGesture(0x03);
+          ble_EnqueueGesture(0x03);
           break;
 
         case DIR_LEFT:
@@ -73,7 +73,7 @@ void handle_gesture() {
           bleData->gesture_value = 0x01;
           displayPrintf(DISPLAY_ROW_9, "Gesture = LEFT");
           //LOG_INFO("Sending left gesture\n\r");
-          ble_SendGesture(0x01);
+          ble_EnqueueGesture(0x01);
           break;
 
         case DIR_RIGHT:
@@ -81,7 +81,7 @@ void handle_gesture() {
           bleData->gesture_value = 0x02;
           displayPrintf(DISPLAY_ROW_9, "Gesture = RIGHT");
           // LOG_INFO("Sending right gesture\n\r");
-          ble_SendGesture(0x02);
+          ble_EnqueueGesture(0x02);
           break;
 
         case DIR_NEAR:
@@ -89,7 +89,7 @@ void handle_gesture() {
           bleData->gesture_value = 0x05;
           displayPrintf(DISPLAY_ROW_9, "Gesture = NEAR");
           // LOG_INFO("Sending near gesture\n\r");
-          ble_SendGesture(0x05);
+          ble_EnqueueGesture(0x05);
           break;
 
         case DIR_FAR:
@@ -97,14 +97,14 @@ void handle_gesture() {
           bleData->gesture_value = 0x06;
           displayPrintf(DISPLAY_ROW_9, "Gesture = FAR");
           //LOG_INFO("Sending far gesture\n\r");
-          ble_SendGesture(0x06);
+          ble_EnqueueGesture(0x06);
           break;
 
         default:
           LOG_INFO("NONE");
           bleData->gesture_value = 0x00;
           displayPrintf(DISPLAY_ROW_9, "Gesture = NONE");
-          ble_SendGesture(0x00);
+          ble_EnqueueGesture(0x00);
       }
   }
 }

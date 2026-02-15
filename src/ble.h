@@ -143,7 +143,18 @@ void ble_SendButtonStatus(uint8_t value);
 
 void ble_SendPulseState(uint8_t * pulse_data);
 
+/** Gesture circular queue: enqueue a gesture; sends immediately or when current indication completes. */
+#define GESTURE_QUEUE_SIZE  8U
+
 void ble_SendGesture(uint8_t state);
+
+/**
+ * @brief Enqueue a gesture to send over BLE. If no indication is in flight, sends immediately.
+ *        Otherwise the gesture is queued and sent when the current indication is confirmed.
+ *        If the queue is full, the oldest gesture is dropped.
+ * @param state Gesture value (e.g. 0x01=LEFT, 0x02=RIGHT, 0x03=UP, 0x04=DOWN, 0x05=NEAR, 0x06=FAR, 0x00=NONE).
+ */
+void ble_EnqueueGesture(uint8_t state);
 
 #endif //DEVICE_IS_BLE_SERVER
 
