@@ -99,6 +99,80 @@ static void ble_TrySendNextGesture(void)
     }
   }
 }
+
+/** Pending indication type for retry on timeout */
+typedef enum {
+  PENDING_NONE,
+  PENDING_TEMP,
+  PENDING_GESTURE,
+  PENDING_OXIMETER,
+  PENDING_BUTTON
+} pending_indication_type_t;
+
+#define PENDING_PAYLOAD_MAX  5
+static pending_indication_type_t pending_type = PENDING_NONE;
+static uint8_t pending_len = 0;
+static uint8_t pending_data[PENDING_PAYLOAD_MAX];
+
+static void ble_SavePendingIndication(pending_indication_type_t type, const uint8_t *data, uint8_t len)
+{
+  if (len > PENDING_PAYLOAD_MAX) {
+    len = PENDING_PAYLOAD_MAX;
+  }
+  pending_type = type;
+  pending_len = len;
+  for (uint8_t i = 0; i < len; i++) {
+    pending_data[i] = data[i];
+  }
+}
+
+static void ble_ClearPendingIndication(void)
+{
+  pending_type = PENDING_NONE;
+  pending_len = 0;
+}
+
+/** Retry last indication on timeout: resend once, then clear pending. */
+static void ble_RetryPendingIndication(void)
+{
+  ble_data_struct_t *bleData = getBleDataPtr();
+  if (pending_type == PENDING_NONE || !bleData->connected) {
+    bleData->indication_inFlight = false;
+    ble_TrySendNextGesture();
+    return;
+  }
+  sl_status_t sc;
+  uint16_t attr;
+  uint8_t len = pending_len;
+  switch (pending_type) {
+    case PENDING_TEMP:
+      attr = gattdb_temperature_measurement;
+      break;
+    case PENDING_GESTURE:
+      attr = gattdb_gesture_state;
+      break;
+    case PENDING_OXIMETER:
+      attr = gattdb_oximeter_state;
+      break;
+    case PENDING_BUTTON:
+      attr = gattdb_button_state;
+      break;
+    default:
+      bleData->indication_inFlight = false;
+      ble_TrySendNextGesture();
+      return;
+  }
+  sc = sl_bt_gatt_server_send_indication(bleData->connection_handle, attr, len, &pending_data[0]);
+  if (sc == SL_STATUS_OK) {
+    bleData->indication_inFlight = true;
+    LOG_INFO("Indication retry sent (type=%d)\n\r", (int)pending_type);
+  } else {
+    bleData->indication_inFlight = false;
+    LOG_ERROR("Indication retry failed status=0x%04x\n\r", (unsigned int)sc);
+    ble_TrySendNextGesture();
+  }
+  ble_ClearPendingIndication();
+}
 #endif
 
 uint8_t server_addr[6]= SERVER_BT_ADDRESS;
@@ -338,6 +412,9 @@ void handle_ble_event(sl_bt_msg_t *evt) {
       bleData->pulse_on            =false;
       bleData->oximeter_busy       =false;
       bleData->temp_busy           =false;
+#if DEVICE_IS_BLE_SERVER
+      ble_ClearPendingIndication();
+#endif
       sc = sl_bt_sm_delete_bondings();
       if(sc != SL_STATUS_OK)
         {
@@ -575,6 +652,7 @@ void handle_ble_event(sl_bt_msg_t *evt) {
       if (sl_bt_gatt_server_confirmation == (sl_bt_gatt_server_characteristic_status_flag_t)
           evt->data.evt_gatt_server_characteristic_status.status_flags) {
           bleData->indication_inFlight = false;
+          ble_ClearPendingIndication();
           ble_TrySendNextGesture(); /* send next queued gesture if any */
           //LOG_INFO("\n\r Confirmation received for an indication");
       }
@@ -586,9 +664,10 @@ void handle_ble_event(sl_bt_msg_t *evt) {
     case sl_bt_evt_gatt_server_indication_timeout_id:
 
       LOG_ERROR("server indication timeout\n\r");
-      // Reset indication flag
       bleData->indication = false;
-      bleData->button_indication=false;
+      bleData->button_indication = false;
+      /* Retry last indication once (temp, gesture, oximeter, or button); else clear and send next gesture */
+      ble_RetryPendingIndication();
       break;
 
 #else
@@ -842,8 +921,9 @@ void ble_SendTemperature()
               }
               else
                 {
-                  // Set indication in-flight flag
+                  // Set indication in-flight flag and save for retry on timeout
                   bleData->indication_inFlight = true;
+                  ble_SavePendingIndication(PENDING_TEMP, &htm_temperature_buffer[0], 5);
                   // Log indication sent
                   LOG_INFO("Sent HTM indication, temp=%d\n\r", temperature_in_c);
                   displayPrintf(DISPLAY_ROW_TEMPVALUE, "Temp=%d", temperature_in_c);
@@ -890,8 +970,9 @@ void ble_SendPulseState(uint8_t * pulse_data)
                 }
               else
                 {
-                  //indication is sent i.e. indication is in flight
+                  //indication is sent i.e. indication is in flight; save for retry on timeout
                   bleData->indication_inFlight = true;
+                  ble_SavePendingIndication(PENDING_OXIMETER, &pulse_data[0], 2);
                   LOG_INFO("Pulse indication sent\n\r");
                  }
             }
@@ -952,8 +1033,9 @@ void ble_SendGesture(uint8_t state)
               else
                 {
 
-                  //indication is sent i.e. indication is in flight
+                  //indication is sent i.e. indication is in flight; save for retry on timeout
                   bleData->indication_inFlight = true;
+                  ble_SavePendingIndication(PENDING_GESTURE, &gesture_buffer_value[0], 2);
                   LOG_INFO("Gesture indication sent, state=%d\n\r", state);
                 }
            }
@@ -1021,9 +1103,9 @@ void ble_SendButtonStatus(uint8_t value)
                 }
               else
                 {
-                  // Set indication in flight flag
-                 // LOG_INFO("\n\r Indication Sent successfully");
-                  bleData->indication_inFlight=true;
+                  // Set indication in flight flag; save for retry on timeout
+                  bleData->indication_inFlight = true;
+                  ble_SavePendingIndication(PENDING_BUTTON, &button_value_buffer[0], 2);
                 }
             }
         }
