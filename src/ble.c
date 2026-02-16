@@ -112,6 +112,7 @@ uint16_t scan_int=0x50;           //scanning interval of 50ms
 
 #if !DEVICE_IS_BLE_SERVER
 static int32_t FLOAT_TO_INT32(const uint8_t *buffer_ptr);
+static float FLOAT_TO_CELSIUS_F(const uint8_t *buffer_ptr);
 #endif
 
 
@@ -711,9 +712,9 @@ void handle_ble_event(sl_bt_msg_t *evt) {
         {
           // Store characteristic value
           bleData->char_value = &(evt->data.evt_gatt_characteristic_value.value.data[0]);
-          // Convert temperature value and display it
-          temp_in_c = FLOAT_TO_INT32(bleData->char_value);
-          displayPrintf(DISPLAY_ROW_TEMPVALUE, "Temp=%d", temp_in_c);
+          // Convert temperature value and display as float
+          float temp_c = FLOAT_TO_CELSIUS_F(bleData->char_value);
+          displayPrintf(DISPLAY_ROW_TEMPVALUE, "Temp=%.3f", (double)temp_c);
         }
 
       if(evt->data.evt_gatt_characteristic_value.characteristic == bleData->gesture_char_handle)
@@ -1059,6 +1060,24 @@ static int32_t FLOAT_TO_INT32(const uint8_t *buffer_ptr)
   // value = 10^exponent * mantissa, pow() returns a double type
   return (int32_t) (pow(10, exponent) * mantissa);
 } // FLOAT_TO_INT32
+
+// -----------------------------------------------
+// Convert IEEE-11073 32-bit float (HTM buffer) to float Celsius for display.
+// -----------------------------------------------
+static float FLOAT_TO_CELSIUS_F(const uint8_t *buffer_ptr)
+{
+  uint8_t signByte = 0;
+  int32_t mantissa;
+  int8_t exponent = (int8_t)buffer_ptr[4];
+  if (buffer_ptr[3] & 0x80) {
+      signByte = 0xFF;
+  }
+  mantissa = (int32_t) (buffer_ptr[1] << 0) |
+      (buffer_ptr[2] << 8) |
+      (buffer_ptr[3] << 16) |
+      (signByte << 24);
+  return (float)(pow(10, exponent) * mantissa);
+} // FLOAT_TO_CELSIUS_F
 
 #endif
 
